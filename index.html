@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Class Of Champion — Game Kuis SDGs</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#EAF4FF;--surface:#FFFFFF;--ink:#0B2540;--muted:#566F8A;--line:#C6DDF4;--accent:#1457FF;--cyan:#00B8F0;--tile:#BFE2FF;--tile-hi:#8FCBFF;--tile-ink:#0B2540;--ok:#14A44D;--bad:#E03131;--shadow:0 10px 30px rgba(20,87,255,.13);--soft:#F3F9FF;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#061326;--surface:#0D2240;--ink:#E7F1FF;--muted:#8CA8C9;--line:#1B3A64;--accent:#5B95FF;--shadow:0 10px 30px rgba(0,0,0,.45);--soft:#102A4E}}
+:root[data-theme="dark"]{--bg:#061326;--surface:#0D2240;--ink:#E7F1FF;--muted:#8CA8C9;--line:#1B3A64;--accent:#5B95FF;--shadow:0 10px 30px rgba(0,0,0,.45);--soft:#102A4E}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background-color:var(--bg);color:var(--ink);font:500 15px/1.5 "Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 44px;background-position:-1px -1px}
+body:before{content:"";position:fixed;inset:0;background:radial-gradient(900px 400px at 85% -10%,rgba(0,184,240,.18),transparent),radial-gradient(700px 400px at -10% 10%,rgba(20,87,255,.14),transparent);pointer-events:none;z-index:0}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{position:relative;z-index:1;max-width:1480px;margin:0 auto;padding:16px 18px 40px}
+h1,h2,h3,.disp{font-family:Sora,"Plus Jakarta Sans",system-ui,sans-serif}
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.brand h1{margin:0;font-size:clamp(28px,5vw,52px);line-height:1;font-weight:800;letter-spacing:-.02em}
+.brand h1 .flask{display:inline-block;transform:rotate(-12deg);margin-right:6px}
+.brand p{margin:8px 0 0;color:var(--accent);font-weight:700;letter-spacing:.02em;font-size:clamp(13px,2vw,17px)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:0;border-radius:12px;padding:10px 16px;font-weight:700;background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(20,87,255,.28);transition:transform .12s,filter .12s}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.07)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;filter:none}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--line);box-shadow:none}
+.btn.ok{background:var(--ok);box-shadow:0 4px 14px rgba(20,164,77,.3)}
+.btn.bad{background:var(--bad);box-shadow:0 4px 14px rgba(224,49,49,.3)}
+.btn.sm{padding:6px 10px;font-size:13px;border-radius:9px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.chip{background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;display:flex;gap:6px;align-items:center}
+.chip b{font-weight:700}
+.chip.st{border-color:currentColor;font-weight:700}
+.st-idle{color:#7A8CA3}.st-running{color:var(--ok)}.st-paused{color:#D98A00}.st-over{color:var(--bad)}
+.welcome{background:linear-gradient(90deg,var(--accent),var(--cyan));color:#fff;border-radius:14px;padding:10px 16px;font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.welcome .btn{background:rgba(255,255,255,.2);box-shadow:none}
+/* login */
+.login{max-width:520px;margin:30px auto;background:var(--surface);border:1.5px solid var(--line);border-radius:22px;padding:28px;box-shadow:var(--shadow)}
+.login h2{margin:0 0 4px;font-size:26px}
+.login p{margin:0 0 18px;color:var(--muted)}
+.fld{display:block;margin-bottom:14px}
+.fld span{display:block;font-weight:700;font-size:13px;margin-bottom:5px}
+.fld input,.fld select,.fld textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;background:var(--soft);outline:none}
+.fld input:focus,.fld select:focus,.fld textarea:focus,.opt:focus-visible,.btn:focus-visible,.tile:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+.err{color:var(--bad);font-weight:700;margin:6px 0 0;min-height:20px}
+/* layout */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:start}
+.panel{background:var(--surface);border:1.5px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow)}
+.panel h3{margin:0 0 12px;font-size:17px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:10px}
+.tile{position:relative;border:2px solid var(--tile-hi);background:var(--tile);color:var(--tile-ink);border-radius:14px;padding:10px 4px;min-height:86px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Sora,sans-serif;transition:transform .15s,box-shadow .15s}
+.tile b{font-size:27px;line-height:1;font-weight:800}
+.tile span{font-size:12px;font-weight:700;margin-top:5px}
+.grid.live .tile:not(.done):not(.off){cursor:pointer}
+.grid.live .tile:not(.done):not(.off):hover{transform:scale(1.08);box-shadow:0 0 0 3px var(--cyan),0 0 24px rgba(0,184,240,.7);z-index:2}
+.tile.done{background:var(--gc);border-color:var(--gc);color:var(--gt);cursor:default}
+.tile.done span{font-size:11px}
+.tile.off{opacity:.4;border-style:dashed}
+.tile:not(.done):not(.off){cursor:not-allowed}
+.grid.live .tile{cursor:pointer}
+/* leaderboard */
+.lb{position:sticky;top:12px}
+.lbbox{position:relative}
+.lbr{position:absolute;left:0;right:0;height:54px;display:flex;align-items:center;gap:10px;padding:0 12px;border-radius:13px;background:var(--soft);border:1.5px solid var(--line);border-left:8px solid var(--gc);transition:transform .7s cubic-bezier(.2,.9,.25,1)}
+.lbr .rk{width:30px;text-align:center;font-weight:800;font-family:Sora}
+.lbr b{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbr small{display:block;font-weight:500;color:var(--muted);font-size:11px;line-height:1.1}
+.lbr em{font-style:normal;font-weight:800;font-family:Sora;font-size:20px}
+.lbr.pop{animation:pop .6s}
+@keyframes pop{40%{transform:translateY(var(--ty)) scale(1.05)}}
+.lbtoggle{display:none}
+/* overlays */
+.ov{position:fixed;inset:0;background:rgba(4,14,34,.66);display:none;align-items:center;justify-content:center;padding:16px;z-index:60;backdrop-filter:blur(3px)}
+.ov.show{display:flex}
+.card{background:var(--surface);border-radius:24px;max-height:94vh;overflow:auto;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.45);animation:in .22s ease-out}
+@keyframes in{from{transform:scale(.94);opacity:0}}
+.qcard{max-width:780px;padding:0}
+.qhead{padding:18px 22px;background:linear-gradient(100deg,#0B2E8A,var(--accent) 55%,var(--cyan));color:#fff;border-radius:24px 24px 0 0;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.qhead h2{margin:0;font-size:clamp(22px,4vw,32px)}
+.qmeta{display:flex;gap:8px;flex-wrap:wrap}
+.qmeta i{font-style:normal;background:rgba(255,255,255,.2);padding:4px 12px;border-radius:99px;font-size:13px;font-weight:700}
+.qbody{padding:20px 22px 24px}
+.stim{background:var(--soft);border-left:5px solid var(--cyan);padding:12px 14px;border-radius:10px;margin-bottom:14px}
+.qtext{font-size:clamp(17px,2.6vw,20px);font-weight:700;margin:0 0 14px;line-height:1.45}
+.hint{color:var(--muted);font-size:13px;margin:-6px 0 12px}
+.opts{display:grid;gap:10px;margin-bottom:16px}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;width:100%;border:2px solid var(--line);background:var(--soft);border-radius:14px;padding:12px 14px;transition:.12s}
+.opt i{flex:none;width:32px;height:32px;border-radius:9px;background:var(--surface);border:1.5px solid var(--line);display:grid;place-items:center;font-style:normal;font-weight:800;font-family:Sora}
+.opt:hover{border-color:var(--cyan)}
+.opt.sel{border-color:var(--accent);background:rgba(20,87,255,.12)}
+.opt.sel i{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center;margin-bottom:10px}
+.pair select{padding:10px;border:1.5px solid var(--line);border-radius:10px;background:var(--soft)}
+.big{width:100%;font-size:17px;padding:14px}
+.tm{height:12px;background:var(--line);border-radius:9px;margin:0 0 14px;position:relative;overflow:hidden}
+.tm i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--ok),#F59F00,var(--bad));width:100%;transition:width 1s linear}
+.tmv{font-weight:800;font-family:Sora;margin-bottom:4px;text-align:right}
+.res{text-align:center;padding:14px 0 6px}
+.res .ico{font-size:64px;line-height:1}
+.res h3{font-size:30px;margin:6px 0}
+.res.bad h3{color:var(--bad)}.res.ok h3{color:var(--ok)}
+.shake{animation:shake .5s}
+@keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+.plus{font-family:Sora;font-weight:800;font-size:44px;color:var(--ok);animation:pts .8s ease-out}
+@keyframes pts{from{transform:translateY(24px) scale(.5);opacity:0}}
+.gpick{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:14px}
+.gbtn{border:0;border-radius:14px;padding:14px 8px;font-weight:800;background:var(--gc);color:var(--gt);font-family:Sora;transition:transform .12s}
+.gbtn:hover{transform:scale(1.06)}
+.gbtn small{display:block;font-weight:600;opacity:.85}
+.x{position:absolute;right:14px;top:14px;background:rgba(255,255,255,.25);border:0;color:#fff;border-radius:50%;width:34px;height:34px;font-size:18px}
+.qcard{position:relative}
+.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translate(-50%,-140%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:12px;font-weight:700;z-index:90;transition:transform .3s;max-width:92vw;text-align:center}
+.toast.show{transform:translate(-50%,0)}
+.rankbn{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%) scale(.7);background:var(--gc);color:var(--gt);padding:18px 28px;border-radius:18px;font:800 clamp(18px,3.4vw,30px) Sora,sans-serif;z-index:95;opacity:0;pointer-events:none;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);transition:.35s}
+.rankbn.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#cf{position:fixed;inset:0;pointer-events:none;z-index:99;width:100%;height:100%}
+/* small cards */
+.mini{max-width:430px;padding:26px}
+.mini h2{margin:0 0 6px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+/* teacher panel */
+.tp{position:fixed;inset:0;z-index:70;background:var(--bg);overflow:auto;padding-top:env(safe-area-inset-top,0px)}
+.tpin{max-width:1280px;margin:0 auto;padding:16px 18px 60px}
+.tphead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.tphead h2{margin:0;font-size:24px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px}
+.tab{flex:none;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:9px 14px;font-weight:700}
+.tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px}
+.stat small{color:var(--muted);display:block}
+.stat b{font:800 24px Sora}
+.tblw{overflow-x:auto;border:1.5px solid var(--line);border-radius:14px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--soft);position:sticky;top:0;white-space:nowrap}
+td.qt{min-width:260px;max-width:420px}
+.pts button{border:1.5px solid var(--line);background:var(--soft);border-radius:7px;padding:2px 6px;font-weight:700;font-size:12px}
+.pts button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tag{display:inline-block;border-radius:99px;padding:2px 9px;font-size:12px;font-weight:700;background:var(--soft);border:1px solid var(--line)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.checks label{display:flex;gap:6px;align-items:center;background:var(--soft);border:1.5px solid var(--line);border-radius:10px;padding:6px 10px;font-size:13px}
+.bar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}
+.bar i{display:block;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--accent),var(--cyan));min-width:3px}
+.bar span{width:160px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qc li{margin:6px 0;list-style:none}
+.qc{padding:0;margin:0}
+.over-card{max-width:900px;padding:28px;text-align:center}
+.over-card h1{font-size:clamp(34px,7vw,64px);margin:0;letter-spacing:.04em}
+.champ{margin:18px auto;padding:22px;border-radius:22px;background:var(--gc);color:var(--gt)}
+.champ h2{margin:4px 0;font-size:clamp(24px,4vw,38px)}
+.champ .sc{font:800 clamp(30px,6vw,52px) Sora}
+.fl{display:grid;gap:8px;text-align:left;margin:14px 0}
+.fl .r{display:flex;gap:10px;align-items:center;padding:10px 14px;border-radius:12px;background:var(--soft);border-left:8px solid var(--gc)}
+.fl .r b{flex:none}.fl .r span{flex:1;color:var(--muted);font-size:13px}
+.big-note{font-size:12.5px;color:var(--muted)}
+@media (max-width:980px){
+ .layout{grid-template-columns:1fr}
+ .lbtoggle{display:inline-flex;position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:40}
+ .lb{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:45;transform:translateY(105%);transition:transform .3s;max-height:72vh;overflow:auto;border-radius:22px 22px 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+ .lb.open{transform:none}
+ .grid{grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
+ .tile b{font-size:22px}
+ .pair{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.mypts{background:linear-gradient(100deg,var(--accent),var(--cyan));color:#fff;border-radius:16px;padding:16px;text-align:center}
+.mypts small{display:block;opacity:.9}.mypts b{font:800 54px/1.1 Sora,sans-serif}
+.mylist{display:grid;gap:6px;max-height:46vh;overflow:auto}
+.myr{display:flex;justify-content:space-between;padding:8px 12px;border-radius:10px;background:var(--soft);border-left:8px solid var(--gc)}
+.myr em{font-style:normal;font-weight:800;font-family:Sora}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="top">
+  <div class="brand">
+   <h1><span class="flask">🧪</span><span id="hTitle">CLASS OF CHAMPION</span></h1>
+   <p>Think Fast • Solve Smart • Become the Champion</p>
+  </div>
+  <div class="tools">
+   <button class="btn ghost" id="bSound" title="Suara">🔊 Suara</button>
+   <button class="btn" id="bTeacher">👨‍🏫 GURU</button>
+  </div>
+ </div>
+ <div class="chips" id="chips"></div>
+
+ <div id="loginView" class="login" hidden>
+  <h2>Masuk ke Arena</h2>
+  <p>Isi identitasmu untuk mulai bermain.</p>
+  <label class="fld"><span>Nama lengkap</span><input id="lName" maxlength="60" autocomplete="name"></label>
+  <label class="fld"><span>Kelas</span><select id="lKelas"></select></label>
+  <label class="fld"><span>Nomor absen</span><input id="lAbsen" type="number" min="1" max="60" inputmode="numeric"></label>
+  <div class="err" id="lErr"></div>
+  <button class="btn big" id="lGo">Masuk</button>
+ </div>
+
+ <div id="gameView" hidden>
+  <div class="welcome"><span id="wText"></span><button class="btn sm" id="bOut">Ganti siswa</button></div>
+  <div class="layout">
+   <div class="panel"><h3 id="gridTitle">Pilih kotak soal</h3><div class="grid" id="grid"></div></div>
+   <aside class="panel lb" id="lb"><h3>⭐ POIN SAYA</h3><div id="lbbox"></div></aside>
+  </div>
+  <button class="btn lbtoggle" id="lbT">⭐ Poin saya</button>
+ </div>
+</div>
+
+<div class="ov" id="ovQ"><div class="card qcard" id="qcard"></div></div>
+
+<div class="ov" id="ovT"><div class="card mini">
+ <h2>TEACHER ACCESS</h2><p class="big-note">Masukkan password guru</p>
+ <label class="fld"><input id="tPw" type="password" autocomplete="current-password"></label>
+ <div class="err" id="tErr"></div>
+ <div class="row"><button class="btn" id="tGo">MASUK</button><button class="btn ghost" data-close="ovT">Batal</button></div>
+</div></div>
+
+<div class="ov" id="ovC" style="z-index:80"><div class="card mini">
+ <h2 id="cT"></h2><p id="cM"></p>
+ <div class="row"><button class="btn ghost" id="cNo">BATAL</button><button class="btn bad" id="cYes"></button></div>
+</div></div>
+
+<div class="ov" id="ovE" style="z-index:80"><div class="card mini" style="max-width:640px" id="eCard"></div></div>
+<div class="ov" id="ovQC" style="z-index:80"><div class="card mini" style="max-width:560px" id="qcCard"></div></div>
+<div class="ov" id="ovO"><div class="card over-card" id="oCard"></div></div>
+
+<div id="tp" class="tp" hidden><div class="tpin" id="tpin"></div></div>
+<div class="toast" id="toast"></div>
+<div class="rankbn" id="rbn"></div>
+<canvas id="cf"></canvas>
+
+<script>
+"use strict";
+/* ================= DATA: BANK SOAL (SDGs, IX) ================= */
+const RAW=[
+/* ---- 5 POIN ---- */
+["pg",5,"","Apa kepanjangan dari SDGs?",["Sustainable Development Goals","Social Development Goals","Strategic Development Group","Sustainable Democracy Goals"],0],
+["isian",5,"","Berapa jumlah tujuan yang terdapat dalam SDGs?",null,["17","tujuh belas"]],
+["bs",5,"","SDGs ditetapkan untuk dicapai pada tahun 2030.",null,true],
+["isian",5,"","Organisasi internasional yang mengesahkan Agenda SDGs pada tahun 2015 adalah ... (tulis singkatan atau nama lengkapnya).",null,["pbb","perserikatan bangsa-bangsa","perserikatan bangsa bangsa","un","united nations"]],
+["pg",5,"","Tujuan 1 SDGs berfokus pada upaya ...",["Mengakhiri kemiskinan di semua tempat","Menjaga ekosistem laut","Menyediakan energi bersih","Memperkuat kemitraan global"],0],
+["pg",5,"","Tujuan SDGs yang berfokus mengakhiri kelaparan dan mencapai ketahanan pangan adalah ...",["Tanpa Kelaparan","Tanpa Kemiskinan","Industri, Inovasi, dan Infrastruktur","Kehidupan di Darat"],0],
+["isian",5,"","Tujuan nomor 4 SDGs bernama Pendidikan ... (lengkapi satu kata).",null,["berkualitas","bermutu"]],
+["bs",5,"","Tujuan 13 SDGs berkaitan dengan penanganan perubahan iklim.",null,true],
+["pg",5,"","Tujuan 14 SDGs berfokus pada pelestarian ekosistem ...",["Lautan","Hutan","Gurun","Pegunungan"],0],
+["isian",5,"","Tujuan 7 SDGs berjudul Energi Bersih dan ... (lengkapi satu kata).",null,["terjangkau"]],
+["pg",5,"","Lembaga pemerintah yang mengoordinasikan pelaksanaan SDGs di Indonesia adalah ...",["Kementerian PPN/Bappenas","BMKG","Bank Indonesia","Badan Siber dan Sandi Negara"],0],
+["bs",5,"","Indonesia termasuk negara yang menyepakati Agenda SDGs.",null,true],
+["pg",5,"","Prinsip “Leave No One Behind” dalam SDGs berarti ...",["Tidak boleh ada seorang pun yang tertinggal dalam pembangunan","Hanya wilayah maju yang diprioritaskan","Pembangunan dihentikan jika anggaran terbatas","Bantuan hanya diberikan kepada kelompok besar"],0],
+["isian",5,"","Padanan istilah Sustainable Development dalam bahasa Indonesia adalah pembangunan ...",null,["berkelanjutan"]],
+["isian",5,"","Tujuan 5 SDGs bertujuan mewujudkan kesetaraan ... (lengkapi satu kata).",null,["gender"]],
+["bs",5,"","SDGs hanya berlaku bagi negara-negara maju.",null,false],
+["pg",5,"","SDGs disahkan pada tahun ...",["2015","2000","2005","2030"],0],
+["isian",5,"","Program global pendahulu SDGs yang berlaku tahun 2000–2015 disingkat ...",null,["mdgs","mdg","millennium development goals"]],
+["bs",5,"","SDGs mencakup aspek sosial, ekonomi, dan lingkungan hidup.",null,true],
+["pg",5,"","Tujuan 16 SDGs mendorong terwujudnya ...",["Perdamaian, keadilan, dan kelembagaan yang tangguh","Energi surya di setiap desa","Perlindungan terumbu karang","Industri manufaktur massal"],0],
+/* ---- 10 POIN ---- */
+["pg",10,"","Manakah yang BUKAN termasuk pilar pembangunan berkelanjutan dalam SDGs?",["Pilar militer","Pilar sosial","Pilar ekonomi","Pilar lingkungan"],0],
+["jodoh",10,"","Jodohkan nomor tujuan SDGs dengan fokusnya.",[["Tujuan 3","Kehidupan sehat dan sejahtera"],["Tujuan 7","Energi bersih dan terjangkau"],["Tujuan 9","Industri, inovasi, dan infrastruktur"],["Tujuan 17","Kemitraan untuk mencapai tujuan"]],null],
+["pg",10,"","Program Indonesia Pintar (KIP) yang membantu biaya sekolah anak kurang mampu paling sesuai dengan tujuan ...",["Pendidikan Berkualitas","Aksi Iklim","Kehidupan Bawah Laut","Energi Bersih"],0],
+["jodoh",10,"","Jodohkan program atau kegiatan di Indonesia dengan tujuan SDGs yang paling sesuai.",[["Program Keluarga Harapan (PKH)","Tanpa Kemiskinan"],["PLTB Sidrap (kincir angin)","Energi Bersih dan Terjangkau"],["Bank sampah","Konsumsi dan Produksi yang Bertanggung Jawab"],["Konservasi terumbu karang","Ekosistem Lautan"]],null],
+["bs",10,"","Pembangunan berkelanjutan berarti memenuhi kebutuhan masa kini tanpa mengurangi kemampuan generasi mendatang memenuhi kebutuhannya.",null,true],
+["pg",10,"","Makna prinsip “universal” dalam SDGs adalah ...",["Berlaku untuk semua negara, baik maju maupun berkembang","Hanya berlaku untuk anggota tetap Dewan Keamanan","Hanya berlaku untuk negara kepulauan","Hanya berlaku untuk sektor pertanian"],0],
+["isian",10,"","Lima prinsip dasar SDGs dikenal sebagai 5P: People, Planet, Prosperity, Peace, dan ... (satu kata).",null,["partnership","kemitraan"]],
+["bs",10,"","Payung hukum pelaksanaan SDGs di Indonesia adalah Peraturan Presiden Nomor 59 Tahun 2017.",null,true],
+["pg",10,"","Membuang sampah ke sungai paling langsung mengganggu pencapaian tujuan ...",["Air Bersih dan Sanitasi Layak","Pendidikan Berkualitas","Kesetaraan Gender","Kemitraan untuk Mencapai Tujuan"],0],
+["pg",10,"","SDGs disebut bersifat terintegrasi karena ...",["Keberhasilan satu tujuan memengaruhi tujuan lainnya","Setiap tujuan berdiri terpisah","Hanya satu tujuan yang boleh dikerjakan dalam satu waktu","Semua tujuan memiliki indikator yang sama"],0],
+["isian",10,"","Tumbuhan pesisir yang akarnya menahan abrasi dan menjadi tempat berkembang biak ikan disebut ...",null,["mangrove","bakau"]],
+["pgk",10,"","Pilih semua sumber energi terbarukan.",["Tenaga surya","Batu bara","Tenaga angin","Panas bumi","Minyak bumi"],[0,2,3]],
+["bs",10,"","Stunting pada balita berkaitan erat dengan tujuan Tanpa Kelaparan dan Kehidupan Sehat dan Sejahtera.",null,true],
+["pg",10,"","Kegiatan siswa di sekolah yang paling mendukung Tujuan 13 (Penanganan Perubahan Iklim) adalah ...",["Menanam pohon dan menghemat listrik","Membeli makanan sekali pakai setiap hari","Membiarkan lampu menyala sepanjang hari","Menggunakan kendaraan pribadi untuk jarak dekat"],0],
+["isian",10,"","Sebutkan satu gas rumah kaca utama penyebab pemanasan global.",null,["karbon dioksida","co2","metana","ch4","dinitrogen oksida","n2o"]],
+["pg",10,"","Perbedaan utama SDGs dibanding MDGs adalah ...",["SDGs lebih luas, memuat 17 tujuan, dan berlaku untuk semua negara","SDGs hanya memuat 8 tujuan","SDGs hanya untuk negara berkembang","SDGs tidak memiliki target waktu"],0],
+["pg",10,"","Pemberian beasiswa afirmasi bagi anak dari daerah 3T (terdepan, terluar, tertinggal) paling mencerminkan prinsip ...",["Tidak ada seorang pun yang tertinggal","Pembangunan terpusat di kota besar","Persaingan bebas tanpa dukungan","Pengurangan layanan pendidikan"],0],
+["bs",10,"","Pekerjaan layak (decent work) hanya berarti pekerjaan dengan gaji tertinggi.",null,false],
+["pg",10,"","Dampak positif transportasi publik massal seperti MRT dan bus listrik bagi kota adalah ...",["Mengurangi kemacetan dan emisi","Menambah jumlah kendaraan pribadi","Meningkatkan polusi udara","Menghilangkan kebutuhan ruang hijau"],0],
+["pg",10,"","Mengapa pelaksanaan SDGs perlu melibatkan banyak pihak?",["Target yang luas tidak dapat dicapai pemerintah sendirian","Agar anggaran negara tidak terpakai","Agar hanya dunia usaha yang bekerja","Karena SDGs tidak memiliki indikator"],0],
+/* ---- 15 POIN ---- */
+["num",15,"","Jumlah tujuan SDGs adalah 17, sedangkan MDGs hanya 8 tujuan. Berapa selisih jumlah tujuan keduanya?",null,9],
+["num",15,"","SDGs disahkan pada 2015 dan ditargetkan tercapai pada 2030. Berapa tahun rentang waktu pelaksanaannya?",null,15],
+["num",15,"","Di suatu daerah terdapat 140 juta orang angkatan kerja dan 7 juta di antaranya menganggur. Berapa persen tingkat pengangguran terbukanya?",null,5],
+["num",15,"","Misalkan sebuah negara berpenduduk 270 juta jiwa dan 9% di antaranya hidup di bawah garis kemiskinan. Berapa juta jiwa penduduk miskinnya?",null,24.3],
+["num",15,"","Sebuah kota menghasilkan 800 ton sampah per hari dan 25% di antaranya berhasil didaur ulang. Berapa ton sampah yang tidak didaur ulang per hari?",null,600],
+["num",15,"","Sebuah PLTS atap menghasilkan 4 kWh listrik per hari. Berapa kWh yang dihasilkan selama 30 hari?",null,120],
+["num",15,"","Sepertiga makanan yang diproduksi dunia terbuang. Jika sebuah daerah memproduksi 90 ton pangan, berapa ton yang diperkirakan terbuang?",null,30],
+["num",15,"","Satu pohon menyerap sekitar 22 kg CO₂ per tahun. Berapa kg CO₂ yang diserap 500 pohon selama 5 tahun?",null,55000],
+["num",15,"","Misalkan bauran energi terbarukan suatu negara baru 12% dari total, sedangkan targetnya 23%. Berapa poin persentase kekurangannya?",null,11],
+["pg",15,"","Langkah yang paling tepat untuk mendukung Tujuan 6 (Air Bersih dan Sanitasi Layak) di rumah adalah ...",["Memperbaiki keran bocor dan tidak membuang limbah ke selokan sembarangan","Membiarkan air mengalir saat menyikat gigi","Membuang minyak jelantah ke saluran air","Mencuci kendaraan setiap hari dengan selang"],0],
+["pg",15,"Rata-rata lama sekolah penduduk usia 25+ tahun: Kota A = 8 tahun, Kota B = 11 tahun, Kota C = 9 tahun.","Berdasarkan data tersebut, kota mana yang capaian Tujuan 4 (Pendidikan Berkualitas)-nya paling baik pada indikator ini?",["Kota B","Kota A","Kota C","Ketiganya sama"],0],
+["pg",15,"","Indonesia berpotensi besar mengembangkan energi panas bumi (PLTP) karena ...",["Berada di wilayah Cincin Api Pasifik dengan banyak gunung berapi","Tidak memiliki gunung berapi","Memiliki musim salju sepanjang tahun","Seluruh wilayahnya berupa gurun"],0],
+["pg",15,"","Sanitasi yang buruk dapat memicu diare, lalu menghambat gizi anak. Rantai ini menunjukkan keterkaitan tujuan ...",["Air Bersih dan Sanitasi Layak dengan Kehidupan Sehat dan Sejahtera","Energi Bersih dengan Kesetaraan Gender","Kehidupan di Darat dengan Kemitraan","Industri dengan Ekosistem Lautan"],0],
+["isian",15,"","Singkatan BABS dalam program sanitasi berarti ... (tulis kepanjangannya).",null,["buang air besar sembarangan"]],
+["bs",15,"","Pemakaian batu bara secara besar-besaran sejalan dengan Tujuan 7 dan Tujuan 13 karena murah.",null,false],
+["pg",15,"","Praktik pertanian yang paling sesuai prinsip keberlanjutan adalah ...",["Terasering dan rotasi tanaman","Membuka lahan dengan membakar hutan","Pemakaian pestisida berlebihan","Menanam satu jenis tanaman terus-menerus"],0],
+["pgk",15,"","Pilih semua dampak positif dari peralihan ke energi terbarukan.",["Emisi gas rumah kaca menurun","Ketergantungan impor bahan bakar berkurang","Polusi udara meningkat","Terbuka lapangan kerja hijau"],[0,1,3]],
+["num",15,"","Sebuah keran bocor meneteskan 3 liter air per jam. Berapa liter air terbuang jika dibiarkan bocor selama 7 hari penuh (24 jam per hari)?",null,504],
+["jodoh",15,"","Jodohkan istilah atau lembaga pelaksana SDGs dengan perannya.",[["Bappenas","Koordinasi perencanaan nasional"],["BPS","Penyedia data indikator capaian"],["Perpres 59/2017","Payung hukum pelaksanaan SDGs"],["VNR","Laporan sukarela capaian nasional ke PBB"]],null],
+["isian",15,"","Total emisi karbon yang dihasilkan dari aktivitas seseorang atau organisasi disebut jejak ... (satu kata).",null,["karbon"]],
+/* ---- 20 POIN ---- */
+["hots",20,"Profil Desa Mekar: 40% rumah tangga belum memiliki sanitasi layak; 3% belum berlistrik; 92% lulusan SD melanjutkan ke SMP; 0,5% penduduk tergolong miskin ekstrem.","Berdasarkan data tersebut, tujuan SDGs yang paling mendesak diprioritaskan desa ini adalah ...",["Air Bersih dan Sanitasi Layak","Energi Bersih dan Terjangkau","Pendidikan Berkualitas","Industri, Inovasi, dan Infrastruktur"],0],
+["hots",20,"","Hubungan antara Tujuan 7 (energi bersih) dan Tujuan 13 (aksi iklim) paling tepat digambarkan sebagai ...",["Saling menguatkan: energi bersih menurunkan emisi sehingga membantu aksi iklim","Saling bertentangan sehingga harus memilih salah satu","Tidak berhubungan sama sekali","Tujuan 13 hanya bergantung pada Tujuan 16"],0],
+["pgk",20,"","Pilih semua contoh tindakan warga yang mendukung Tujuan 12 (Konsumsi dan Produksi Bertanggung Jawab).",["Membawa tas belanja sendiri","Memilah sampah rumah tangga","Membeli barang berlebihan karena diskon","Memperbaiki barang rusak daripada membuangnya"],[0,1,3]],
+["hots",20,"Sebuah pabrik di tepi sungai menyerap 500 tenaga kerja lokal, tetapi limbah cairnya membuat ikan mati dan air sungai tidak layak dipakai warga.","Solusi yang paling menyeimbangkan Tujuan 8 (pekerjaan layak) dan Tujuan 6 (air bersih) adalah ...",["Mewajibkan instalasi pengolahan air limbah (IPAL) sambil mempertahankan operasi pabrik","Menutup pabrik permanen tanpa solusi bagi pekerja","Membiarkan limbah karena lapangan kerja lebih penting","Memindahkan warga menjauh dari sungai"],0],
+["hots",20,"Di Kota Y, jumlah kendaraan pribadi naik 10% dan pengguna angkutan umum hanya naik 4% dalam setahun; emisi karbon kota naik 6%.","Kesimpulan yang paling masuk akal dari data tersebut adalah ...",["Kenaikan kendaraan pribadi yang lebih cepat dari angkutan umum kemungkinan ikut mendorong emisi, sehingga angkutan umum perlu diperkuat","Angkutan umum adalah penyebab utama kenaikan emisi","Emisi kota tidak dipengaruhi transportasi","Kota Y sudah mencapai Tujuan 11 sepenuhnya"],0],
+["pgk",20,"","Pilih semua faktor yang dapat menghambat pencapaian SDGs di Indonesia.",["Kondisi geografis kepulauan yang menyulitkan pemerataan layanan","Kesenjangan pembangunan antarwilayah","Keterbatasan data terpilah yang akurat","Banyaknya hari libur nasional"],[0,1,2]],
+["isian",20,"","Tujuan SDGs yang secara khusus menargetkan pengurangan pencemaran laut, termasuk sampah plastik, adalah tujuan nomor ...",null,["14","tujuan 14","ekosistem lautan","kehidupan bawah laut","sdg 14"]],
+["uraian",20,"","Jelaskan secara singkat satu alasan mengapa pemberdayaan perempuan membantu mengurangi kemiskinan keluarga.",null,[["penghasilan","pendapatan","ekonomi","bekerja","usaha"],["keluarga","anak","pendidikan","gizi","kesejahteraan"]]],
+["hots",20,"","Dalam program SDGs Desa, pendekatan yang melibatkan warga menyusun prioritas pembangunan dinilai lebih efektif karena ...",["Warga paling memahami kebutuhan dan masalah lokalnya sehingga program tepat sasaran","Warga tidak perlu dilibatkan agar cepat","Kebutuhan desa sama di seluruh Indonesia","Pemerintah pusat lebih tahu detail setiap desa"],0],
+["hots",20,"","Perluasan kebun dengan membuka hutan dapat menaikkan produksi pangan jangka pendek tetapi merugikan Tujuan 15. Pendekatan yang mempertemukan keduanya adalah ...",["Intensifikasi pertanian di lahan yang ada dan agroforestri","Menebang lebih banyak hutan","Menghentikan semua kegiatan pertanian","Mengimpor seluruh kebutuhan pangan"],0],
+["hots",20,"","Misalkan harga panel surya turun drastis dalam sepuluh tahun terakhir. Implikasi paling tepat bagi Tujuan 7 adalah ...",["Energi surya makin terjangkau dan peluang akses listrik di daerah terpencil bertambah","Energi surya menjadi tidak relevan","Listrik batu bara otomatis hilang","Tujuan 7 tidak lagi diperlukan"],0],
+["bs",20,"","Pertumbuhan ekonomi yang tinggi otomatis berarti seluruh target SDGs telah tercapai.",null,false],
+["jodoh",20,"","Jodohkan situasi dengan prinsip pembangunan yang diwujudkannya.",[["Warga ikut merencanakan penggunaan dana desa","Partisipasi"],["Laporan capaian program dipublikasikan terbuka","Transparansi dan akuntabilitas"],["Layanan diprioritaskan bagi penyandang disabilitas dan kelompok rentan","Inklusivitas"],["Proyek memperhitungkan dampaknya bagi generasi mendatang","Keberlanjutan"]],null],
+["hots",20,"","Setiap target SDGs disertai indikator terukur terutama agar ...",["Kemajuan dapat dipantau dan dievaluasi secara objektif","Negara tidak perlu melapor","Target tidak dapat diubah","Hanya donor yang menilai"],0],
+["pgk",20,"","Pilih semua dampak kebakaran lahan gambut.",["Pelepasan emisi karbon dalam jumlah besar","Gangguan kesehatan pernapasan akibat kabut asap","Rusaknya habitat satwa liar","Turunnya harga bahan bakar dunia"],[0,1,2]],
+["hots",20,"Audit sampah sebuah sekolah: 60% organik (sisa makanan, daun), 30% plastik, 10% kertas.","Program yang paling tepat dijadikan prioritas sekolah adalah ...",["Pengomposan sampah organik dan bank sampah untuk plastik","Membakar semua sampah di belakang sekolah","Membuang seluruh sampah ke satu tempat","Melarang siswa membawa bekal"],0],
+["hots",20,"","Mikroplastik di laut berbahaya bagi manusia karena ...",["Dapat masuk rantai makanan melalui ikan dan hasil laut","Membuat air laut menjadi tawar","Menambah populasi ikan","Hanya merusak perahu nelayan"],0],
+["hots",20,"","Bendungan besar penghasil listrik tenaga air dapat mendukung Tujuan 7, tetapi berpotensi mengganggu ekosistem sungai dan warga sekitar. Penilaian paling bijak adalah ...",["Menimbang dampak sosial dan lingkungan melalui kajian AMDAL serta melibatkan warga","Mengabaikan dampak karena energinya bersih","Menolak semua proyek energi","Menyerahkan keputusan hanya kepada kontraktor"],0],
+["hots",20,"","Sebuah perusahaan menanam 1.000 pohon dan beriklan hijau besar-besaran, tetapi tetap membuang limbah ke sungai. Praktik ini paling tepat disebut ...",["Greenwashing","Ekonomi sirkular","Konservasi","Reboisasi murni"],0],
+["hots",20,"","Layanan sekolah digital dicanangkan di desa yang belum memiliki listrik dan sinyal. Hambatan utamanya terkait tujuan ...",["Industri, Inovasi, dan Infrastruktur","Kehidupan di Darat","Ekosistem Lautan","Perdamaian dan Keadilan"],0],
+/* ---- 25 POIN ---- */
+["kasus",25,"Kota pesisir X sering terkena banjir rob. Hutan mangrove ditebang, air tanah disedot berlebihan sehingga tanah turun, dan nelayan kecil kehilangan hasil tangkapan.","Paket kebijakan yang paling terpadu dan selaras dengan SDGs adalah ...",["Rehabilitasi mangrove, pengendalian penyedotan air tanah, serta pendampingan mata pencaharian nelayan","Membangun tanggul tinggi saja","Memindahkan nelayan ke kota tanpa pendampingan","Menambah penebangan agar lahan perumahan bertambah"],0],
+["kasus",25,"Desa wisata Harapan ingin ramai wisatawan tanpa merusak lingkungan dan budaya setempat.","Pilih semua langkah yang selaras dengan prinsip keberlanjutan.",["Membatasi jumlah pengunjung sesuai daya dukung","Mengutamakan pemandu dan UMKM warga lokal","Membangun hotel di zona resapan air","Mengelola sampah wisata dengan pemilahan"],[0,1,3]],
+["kasus",25,"Petani sawit skala kecil di sebuah kabupaten tidak mampu memenuhi syarat sertifikasi keberlanjutan sehingga harga jualnya rendah.","Solusi yang paling sejalan dengan Tujuan 1, 8, dan 15 adalah ...",["Pendampingan, akses pembiayaan, dan koperasi agar petani dapat memenuhi standar sertifikasi","Melarang petani menjual hasil panen","Membiarkan mereka membuka hutan baru","Menyerahkan lahan kepada perusahaan besar"],0],
+["uraian",25,"","Sebutkan SATU dampak kekurangan air bersih terhadap kesehatan dan SATU dampaknya terhadap produksi pangan.",null,[["diare","penyakit","sanitasi","kesehatan","sakit","dehidrasi"],["gagal panen","pertanian","irigasi","panen","pangan","tanaman"]]],
+["kasus",25,"Sebuah SMP menjalankan proyek bank sampah. Dalam tiga bulan tabungan siswa naik, tetapi volume sampah plastik yang terkumpul stagnan karena siswa tetap membeli minuman kemasan.","Evaluasi yang paling tepat untuk menyempurnakan proyek adalah ...",["Menambah kampanye pengurangan sampah dari sumbernya, misalnya botol minum isi ulang","Menutup bank sampah","Menghapus semua insentif","Menaikkan harga minuman di kantin tanpa edukasi"],0],
+["kasus",25,"Raka, anak penyandang disabilitas netra di sebuah desa, tidak bersekolah karena sekolah terdekat tidak memiliki guru pendamping dan akses jalannya sulit.","Rekomendasi yang paling sesuai prinsip tidak ada yang tertinggal adalah ...",["Menyediakan guru pendamping, bahan ajar aksesibel, dan perbaikan akses menuju sekolah","Membiarkan Raka belajar sendiri tanpa dukungan","Menunggu sampai Raka dewasa","Memindahkan Raka ke sekolah jauh tanpa transportasi"],0],
+["hots",25,"","Pemerintah daerah menyatakan Tujuan 1 tercapai karena rata-rata pendapatan warga naik. Evaluasi paling kritis terhadap klaim itu adalah ...",["Rata-rata dapat menutupi ketimpangan sehingga data kelompok termiskin perlu diperiksa","Rata-rata selalu menggambarkan semua warga","Pendapatan tidak berhubungan dengan kemiskinan","Klaim pemerintah tidak perlu diperiksa"],0],
+["uraian",25,"","Jelaskan mengapa Tujuan 17 (Kemitraan) sering disebut pengungkit bagi tujuan-tujuan lainnya.",null,[["dana","pendanaan","teknologi","sumber daya","pengetahuan"],["kerja sama","kolaborasi","bersama","pihak","negara"]]],
+["kasus",25,"Kota Z langganan banjir setiap hujan deras.","Pilih semua tindakan yang selaras dengan Tujuan 11 dan Tujuan 13.",["Memperbanyak ruang terbuka hijau","Membuat sumur resapan dan biopori","Normalisasi sungai dengan melibatkan warga terdampak","Menimbun rawa untuk perumahan"],[0,1,2]],
+["kasus",25,"Sebuah perusahaan tambang ingin beroperasi di wilayah hutan adat yang menjadi sumber air dan penghidupan masyarakat.","Pendekatan yang paling selaras dengan SDGs adalah ...",["Kajian dampak lingkungan dan sosial, persetujuan masyarakat adat, serta pertimbangan alternatif lokasi","Memberi izin langsung demi pendapatan daerah","Mengusir masyarakat tanpa dialog","Menolak seluruh investasi apa pun"],0],
+["hots",25,"","Dana desa terbatas dan hanya cukup untuk satu proyek: sistem air bersih dan sanitasi, atau pembangunan gapura desa. Pilihan dengan dampak berganda terbesar bagi tujuan SDGs lain adalah ...",["Sistem air bersih dan sanitasi, karena memengaruhi kesehatan, kehadiran sekolah, dan produktivitas warga","Gapura desa, karena memperindah desa","Keduanya sama saja dampaknya","Tidak membangun apa pun"],0],
+["kasus",25,"Banyak warung makan di sebuah kota membuang sisa makanan dalam jumlah besar setiap hari, sementara sebagian warga kesulitan pangan.","Inisiatif yang paling tepat mendukung Tujuan 2 dan Tujuan 12 sekaligus adalah ...",["Bank pangan yang menyalurkan makanan layak konsumsi dan pengomposan untuk sisanya","Melarang warga makan di warung","Membuang makanan lebih cepat","Memperbesar porsi agar lebih banyak sisa"],0],
+["hots",25,"","Pilih semua pernyataan yang menjelaskan relevansi SDGs bagi Indonesia.",["Wilayah kepulauan rentan terhadap kenaikan muka laut","Bonus demografi menuntut pendidikan dan lapangan kerja yang layak","SDGs tidak relevan karena Indonesia sudah bebas masalah pembangunan","Kekayaan keanekaragaman hayati perlu dilindungi"],[0,1,3]],
+["uraian",25,"","Sebutkan dua alasan mengapa Indonesia rentan terhadap dampak perubahan iklim.",null,[["kepulauan","pulau","pesisir","garis pantai","laut"],["banjir","kekeringan","cuaca ekstrem","muka laut","bencana","hidrometeorologi"]]],
+["kasus",25,"Sebuah lembaga memasang PLTS di desa terpencil, tetapi setahun kemudian banyak panel rusak karena warga tidak tahu cara merawatnya dan suku cadang sulit dibeli.","Pelajaran terpenting untuk keberlanjutan proyek berikutnya adalah ...",["Melibatkan dan melatih warga serta menyiapkan mekanisme pemeliharaan jangka panjang","Memasang lebih banyak panel tanpa pelatihan","Menyalahkan warga","Menghentikan semua proyek energi"],0],
+["hots",25,"","Dibandingkan bantuan sesaat, program pemberdayaan seperti pelatihan usaha dan akses modal dinilai ...",["Lebih berpeluang menurunkan kemiskinan jangka panjang, tetapi bantuan sesaat tetap perlu bagi kelompok yang sangat rentan","Selalu buruk karena lambat","Tidak berbeda sama sekali","Hanya cocok untuk kota besar"],0],
+["kasus",25,"Kelas IX akan membuat proyek Hari Bumi bertema SDGs di sekolah.","Pilih semua langkah yang tepat dalam merancang proyek yang efektif.",["Mengidentifikasi masalah nyata di lingkungan sekolah","Menentukan tujuan SDGs yang berkaitan","Mengukur dampak sebelum dan sesudah kegiatan","Menghindari evaluasi agar cepat selesai"],[0,1,2]],
+["hots",25,"","Sebuah negara maju memindahkan pabrik berpolusi tinggi ke negara berkembang demi menekan biaya. Penilaian paling kritis dari sudut SDGs adalah ...",["Mengalihkan beban pencemaran ke negara lain sehingga bertentangan dengan keadilan dan produksi bertanggung jawab","Selalu adil karena menciptakan pekerjaan","Tidak ada kaitannya dengan SDGs","Menyelesaikan masalah iklim global"],0],
+["kasus",25,"Nelayan tradisional di suatu perairan makin sulit mendapat ikan karena penangkapan ikan ilegal (IUU fishing) dan penggunaan alat tangkap perusak.","Tindakan yang paling selaras dengan Tujuan 14 dan Tujuan 8 adalah ...",["Pengawasan perairan, pelarangan alat tangkap perusak, dan dukungan bagi nelayan kecil","Membiarkan penangkapan tanpa batas","Melarang semua nelayan melaut","Mengganti ikan lokal dengan impor tanpa kebijakan"],0],
+["kasus",25,"Kebakaran hutan dan lahan di satu wilayah menimbulkan kabut asap yang menyebar ke daerah lain dan negara tetangga.","Langkah paling tepat berdasarkan semangat SDGs adalah ...",["Pencegahan terpadu, penegakan hukum, restorasi gambut, dan kerja sama regional","Menunggu hujan memadamkan api","Menyalahkan pihak lain tanpa tindakan","Menutup sekolah tanpa mencari penyebab"],0],
+/* ---- CADANGAN (untuk regenerate) ---- */
+["isian",5,"","Tujuan 10 SDGs bertujuan mengurangi ... di dalam dan antarnegara (lengkapi satu kata).",null,["kesenjangan","ketimpangan"]],
+["pg",5,"","Tujuan 3 SDGs berfokus pada ...",["Kehidupan sehat dan sejahtera","Pendidikan berkualitas","Energi bersih dan terjangkau","Penanganan perubahan iklim"],0],
+["bs",10,"","Tujuan 15 SDGs berkaitan dengan pelestarian hutan dan keanekaragaman hayati di daratan.",null,true],
+["pg",10,"","Contoh penerapan konsumsi yang bertanggung jawab adalah ...",["Membeli sesuai kebutuhan dan memilih produk ramah lingkungan","Membeli barang secara berlebihan","Membuang makanan yang masih layak","Memakai kemasan sekali pakai"],0],
+["num",15,"","Sebuah sekolah menghemat 2 kWh listrik per hari. Berapa kWh yang dihemat dalam 20 hari sekolah?",null,40],
+["pg",15,"","Indonesia disebut rentan terhadap kenaikan muka laut karena ...",["Memiliki ribuan pulau dengan garis pantai yang sangat panjang","Tidak memiliki wilayah laut","Seluruh wilayahnya dataran tinggi","Tidak memiliki penduduk pesisir"],0],
+["hots",20,"","Mengapa kemiskinan sering berkaitan dengan rendahnya akses pendidikan?",["Pendidikan rendah membatasi peluang kerja berpenghasilan layak sehingga siklus kemiskinan berlanjut","Kemiskinan tidak berkaitan dengan pendidikan","Pendidikan tinggi selalu menyebabkan kemiskinan","Hanya cuaca yang berpengaruh"],0],
+["bs",20,"","Menutup seluruh pembangkit listrik tanpa menyiapkan pengganti merupakan strategi yang selaras dengan Tujuan 7.",null,false],
+["kasus",25,"Sebuah kota ingin mengurangi kemacetan dan polusi udara, tetapi pengemudi ojek daring khawatir kehilangan pendapatan jika angkutan massal diperluas.","Kebijakan yang paling selaras dengan Tujuan 8 dan Tujuan 11 adalah ...",["Memperluas angkutan massal sambil melatih dan melibatkan pengemudi sebagai penghubung layanan","Melarang ojek daring","Menghentikan proyek angkutan massal","Memberi subsidi kendaraan pribadi"],0],
+["uraian",25,"","Jelaskan satu cara teknologi digital dapat membantu pencapaian SDGs di daerah terpencil.",null,[["teknologi","digital","internet","aplikasi","daring","online"],["pendidikan","kesehatan","pertanian","pasar","layanan","informasi"]]]
+];
+const LEVEL={5:"Sangat Mudah",10:"Mudah",15:"Sedang",20:"Sulit",25:"Challenge"};
+const TYPES={pg:"Pilihan Ganda",pgk:"Pilihan Ganda Kompleks",bs:"Benar/Salah",isian:"Isian Singkat",uraian:"Uraian Singkat",num:"Numerik/Perhitungan",jodoh:"Menjodohkan",hots:"Analisis/HOTS",kasus:"Studi Kasus"};
+const POOL=RAW.map((r,i)=>({uid:"p"+i,type:r[0],pts:r[1],stim:r[2],q:r[3],opts:r[4],ans:r[5]}));
+const PW_HASH="652c39618c4e327567b73bd921bab5cabd5e677d7eab36a45f39cc203664312f";
+const COLORS=[["Merah","#EF4444","🔴"],["Kuning","#EAB308","🟡"],["Pink","#EC4899","🩷"],["Hijau","#22C55E","🟢"],["Ungu","#8B5CF6","🟣"],["Orange","#F97316","🟠"]];
+
+/* ================= UTIL ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm=s=>String(s==null?"":s).normalize("NFKC").toLowerCase().replace(/\s+/g," ").trim().replace(/[.!]+$/,"");
+const uid=()=>Math.random().toString(36).slice(2,10);
+const slug=s=>norm(s).replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+function hash(s){let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function shuffle(arr,r){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function textOn(hex){const h=hex.replace("#","");const n=parseInt(h.length===3?h.split("").map(x=>x+x).join(""):h,16);const l=(0.299*(n>>16)+0.587*(n>>8&255)+0.114*(n&255))/255;return l>0.62?"#10243D":"#fff"}
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("show"),2400)}
+const fdate=iso=>{const d=new Date(iso);return d.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"})};
+const ftime=iso=>new Date(iso).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+const isoDay=()=>new Date().toISOString().slice(0,10);
+
+/* ================= STATE ================= */
+const LS="coc_state_v1",LSST="coc_student_v1";
+function fresh(){return{cfg:{mapel:"IPS",kelas:"IX",materi:"Mengenali tujuan Sustainable Development Goals (SDGs) dan relevansinya dengan Indonesia",nama:"Class Of Champion",guru:"Miss Mira",kelasList:"IX A,IX B,IX C,IX D,IX E",jumlah:100,types:Object.keys(TYPES),timer:false,timerSec:60,sound:true},
+ bank:[],groups:COLORS.map((c,i)=>({id:"g"+i,name:c[0],hex:c[1],emo:c[2]})),status:"idle",seed:1,log:[],history:[],students:[],acts:[],progress:{},evals:[],refl:[],startedAt:null}}
+let S=(()=>{try{const s=JSON.parse(localStorage.getItem(LS));if(s&&s.cfg)return s}catch(e){}return null})()||fresh();
+if(S.cfg.kelas==="IX/D")S.cfg.kelas="IX";
+let ST=(()=>{try{return JSON.parse(localStorage.getItem(LSST))}catch(e){return null}})();
+S.tabLog=S.tabLog||[];
+if(S.cfg.trackTab===undefined){S.cfg.trackTab=true;S.cfg.tabWarn=true;S.cfg.trackBlur=false}
+function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+function saveST(){try{ST?localStorage.setItem(LSST,JSON.stringify(ST)):localStorage.removeItem(LSST)}catch(e){}}
+
+/* ================= SIMILARITY / QC ================= */
+const STOP=new Set("yang dan atau dari pada untuk dengan adalah ini itu sebuah suatu dalam oleh sdgs tujuan sebagai agar karena bagi saja lebih akan dapat paling berikut semua pilih".split(" "));
+function toks(q){const t=norm(q.q+" "+(q.stim||"")+" "+(q.type==="jodoh"&&q.opts?q.opts.map(p=>p.join(" ")).join(" "):"")).replace(/[^a-z0-9\s]/g," ").split(" ");return new Set(t.filter(w=>w.length>3&&!STOP.has(w)))}
+function sim(a,b){const A=toks(a),B=toks(b);let i=0;A.forEach(w=>{if(B.has(w))i++});return i/((A.size+B.size-i)||1)}
+const SIM_MAX=0.72;
+function keyText(q){const f=fmt(q);
+ if(f==="single")return q.opts[q.ans]||"";
+ if(f==="multi")return q.ans.map(i=>q.opts[i]).join(" • ");
+ if(f==="bs")return q.ans?"Benar":"Salah";
+ if(f==="text")return [].concat(q.ans,q.alts||[]).join(" / ");
+ if(f==="num")return [q.ans].concat(q.alts||[]).join(" / ");
+ if(f==="long")return q.ans.map(g=>g.join("|")).join(" ; ");
+ return q.opts.map(p=>p[0]+" → "+p[1]).join("; ")}
+function findDup(){const bad=[];const seen=new Map();
+ S.bank.forEach((q,i)=>{const k=norm(q.q+"|"+(q.stim||""));if(seen.has(k)){bad.push(i);return}
+  for(let j=0;j<i;j++){if(bad.includes(j))continue;if(sim(q,S.bank[j])>=SIM_MAX){bad.push(i);return}}
+  seen.set(k,i)});return bad}
+function candidate(pts,exclude){const used=new Set(S.bank.map(b=>b.uid));const types=new Set(S.cfg.types);
+ const cands=POOL.filter(p=>!used.has(p.uid)&&types.has(p.type)&&!(exclude&&exclude.has(p.uid)));
+ const ok=c=>!S.bank.some(b=>sim(c,b)>=SIM_MAX);
+ return cands.filter(c=>c.pts===pts&&ok(c))[0]||cands.filter(ok)[0]||null}
+function putFromPool(i,c){const o=S.bank[i];S.bank[i]={...o,uid:c.uid,type:c.type,pts:c.pts,stim:c.stim,q:c.q,opts:JSON.parse(JSON.stringify(c.opts)),ans:JSON.parse(JSON.stringify(c.ans)),alts:[],attempts:0,wrong:0}}
+function runQC(){let regen=0;
+ for(let pass=0;pass<6;pass++){const bad=findDup().filter(i=>!S.bank[i].done);if(!bad.length)break;
+  bad.forEach(i=>{const c=candidate(S.bank[i].pts,null);if(c){putFromPool(i,c);regen++}})}
+ const act=S.bank.filter(q=>q.active),n=act.length,res=[];
+ const dups=findDup();
+ res.push(["Unique question check",!dups.length,dups.length?"Soal #"+dups.map(i=>S.bank[i].n).join(", #")+" terlalu mirip":"Tidak ada pertanyaan identik"]);
+ res.push(["Semantic similarity check",!dups.length,dups.length?"Ada pasangan soal terlalu mirip":"Tidak ada soal dengan pola yang terlalu mirip"]);
+ const cnt={};act.filter(q=>["isian","num"].includes(q.type)).forEach(q=>{const k=norm(keyText(q).split(" / ")[0]);cnt[k]=(cnt[k]||0)+1});
+ const rep=Object.entries(cnt).filter(e=>e[1]>2);
+ res.push(["Answer duplication check",!rep.length,rep.length?"Jawaban sama berulang: "+rep.map(e=>e[0]).join(", "):"Tidak ada jawaban yang berulang"]);
+ const okPts=act.every(q=>LEVEL[q.pts]);
+ res.push(["Difficulty check",okPts,okPts?"Seluruh poin berada pada 5, 10, 15, 20, atau 25":"Ada poin di luar 5–25"]);
+ const dist=[5,10,15,20,25].map(p=>act.filter(q=>q.pts===p).length);
+ const okD=n<5||dist.every(d=>d>0&&d<=n*0.4);
+ res.push(["Point distribution check",okD,"Sebaran 5/10/15/20/25: "+dist.join(" / ")]);
+ const ts=new Set(S.cfg.types);const okT=act.every(q=>ts.has(q.type));
+ res.push(["Question type check",okT,okT?"Jenis soal sesuai pilihan guru":"Ada jenis soal di luar pilihan guru"]);
+ const okR=act.every(q=>q.q&&q.q.trim()&&keyText(q));
+ res.push(["Material relevance check",okR,okR?"Seluruh soal berasal dari materi SDGs dan memiliki kunci":"Ada soal tanpa teks atau kunci"]);
+ const okG=act.every(q=>(q.q.length+(q.stim||"").length)<520);
+ res.push(["Grade level check",okG,okG?"Bahasa dan panjang stimulus sesuai jenjang kelas IX":"Ada soal terlalu panjang"]);
+ save();return{res,regen,pass:res.every(r=>r[1])&&n>0}}
+
+/* ================= BANK GENERATION ================= */
+function buildBank(){const types=new Set(S.cfg.types);const r=rng(hash("coc"+S.seed));
+ const pool=POOL.filter(p=>types.has(p.type));const N=Math.min(+S.cfg.jumlah||100,pool.length);
+ const byP={};[5,10,15,20,25].forEach(p=>byP[p]=shuffle(pool.filter(x=>x.pts===p),r));
+ const per=Math.floor(N/5);let extra=N-per*5;const chosen=[];
+ [5,10,15,20,25].forEach(p=>{const take=Math.min(per+(extra>0?1:0),byP[p].length);if(extra>0)extra--;chosen.push(...byP[p].splice(0,take))});
+ const rest=shuffle([].concat(...Object.values(byP)),r);while(chosen.length<N&&rest.length)chosen.push(rest.shift());
+ S.bank=shuffle(chosen,r).map((c,i)=>({n:i+1,uid:c.uid,type:c.type,pts:c.pts,stim:c.stim,q:c.q,opts:JSON.parse(JSON.stringify(c.opts)),ans:JSON.parse(JSON.stringify(c.ans)),alts:[],active:true,done:false,winner:null,by:null,attempts:0,wrong:0}));
+ S.log=[];S.status="idle";save()}
+if(!S.bank.length)buildBank();
+
+/* ================= DERIVED ================= */
+const G=id=>S.groups.find(g=>g.id===id);
+const score=gid=>S.bank.filter(q=>q.done&&q.winner===gid).reduce((a,q)=>a+q.pts,0);
+const solvedOf=gid=>S.bank.filter(q=>q.done&&q.winner===gid).length;
+function ranked(){return S.groups.map(g=>({...g,score:score(g.id),solved:solvedOf(g.id)})).sort((a,b)=>b.score-a.score||b.solved-a.solved||a.name.localeCompare(b.name))}
+function members(gid){const m={};S.bank.filter(q=>q.done&&q.winner===gid).forEach(q=>{m[q.by]=(m[q.by]||0)+q.pts});return Object.entries(m).sort((a,b)=>b[1]-a[1])}
+function studentRank(){const m={};S.students.forEach(s=>{m[s.nama]={nama:s.nama,kelas:s.kelas,pts:0,n:0}});
+ S.bank.filter(q=>q.done).forEach(q=>{const k=q.by;(m[k]=m[k]||{nama:k,kelas:"",pts:0,n:0});m[k].pts+=q.pts;m[k].n++});
+ return Object.values(m).sort((a,b)=>b.pts-a.pts||b.n-a.n)}
+const STATUS={idle:"Belum dimulai",running:"Berlangsung",paused:"Dijeda",over:"Selesai"};
+
+/* ================= SOUND & CONFETTI ================= */
+let AC=null;
+function sfx(k){if(!S.cfg.sound)return;const M={click:[[660]],wrong:[[240,170]],right:[[523,659,784]],point:[[880,1175]],rank:[[523,659,784,1047]],over:[[392,330,262]],champ:[[523,659,784,1047,1319]]}[k];if(!M)return;
+ try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const d=.12;M[0].forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=k==="wrong"?"sawtooth":"sine";o.frequency.value=f;const t=AC.currentTime+i*d;g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+d*1.4);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d*1.5)})}catch(e){}}
+function confetti(ms=3200,n=170){const c=$("#cf"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;
+ const cols=S.groups.map(g=>g.hex).concat(["#1457FF","#00B8F0"]);
+ const ps=Array.from({length:n},()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height*.5,w:6+Math.random()*7,h:8+Math.random()*10,vx:-2+Math.random()*4,vy:2+Math.random()*4,r:Math.random()*6,vr:-.2+Math.random()*.4,c:cols[Math.floor(Math.random()*cols.length)]}));
+ const t0=performance.now();if(matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+ (function f(t){x.clearRect(0,0,c.width,c.height);const k=t-t0;ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.globalAlpha=Math.max(0,1-k/ms);x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore()});
+  if(k<ms)requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height)})(t0)}
+function rankBanner(g,rank){const b=$("#rbn");b.style.setProperty("--gc",g.hex);b.style.setProperty("--gt",textOn(g.hex));b.textContent=(g.emo||"")+" KELOMPOK "+g.name.toUpperCase()+" NAIK KE PERINGKAT #"+rank+"!";b.classList.add("show");sfx("rank");setTimeout(()=>b.classList.remove("show"),2400)}
+
+/* ================= RENDER: STUDENT VIEW ================= */
+function renderHead(){
+ $("#hTitle").textContent=(S.cfg.nama||"Class Of Champion").toUpperCase();
+ document.title=(S.cfg.nama||"Class Of Champion")+" — Game Kuis";
+ $("#chips").innerHTML=`<span class="chip">📘 <b>${esc(S.cfg.mapel)}</b></span><span class="chip">🏫 Kelas <b>${esc(S.cfg.kelas)}</b></span><span class="chip">🎯 <b>${esc(S.cfg.materi)}</b></span><span class="chip">👩‍🏫 <b>${esc(S.cfg.guru)}</b></span><span class="chip st st-${S.status}">● ${STATUS[S.status]}</span>`;
+ $("#bSound").textContent=S.cfg.sound?"🔊 Suara":"🔇 Suara";
+ $("#loginView").hidden=!!ST;$("#gameView").hidden=!ST;
+ if(ST)$("#wText").textContent="Welcome, "+ST.nama+" • "+ST.kelas+" • No. "+ST.absen;
+ const sel=$("#lKelas");if(sel&&sel.dataset.v!==S.cfg.kelasList){sel.dataset.v=S.cfg.kelasList;sel.innerHTML=S.cfg.kelasList.split(",").map(k=>k.trim()).filter(Boolean).map(k=>`<option>${esc(k)}</option>`).join("")}}
+function renderGrid(){const g=$("#grid");g.className="grid"+(S.status==="running"||S.status==="idle"?" live":"");
+ const done=S.bank.filter(q=>q.done).length;
+ $("#gridTitle").textContent=(S.status==="running"||S.status==="idle")?`Pilih kotak soal • ${done}/${S.bank.length} dikuasai`:`Papan soal • ${STATUS[S.status]}`;
+ g.innerHTML=S.bank.map(q=>{
+  if(q.done){const gr=G(q.winner)||{hex:"#999",name:"?"};return`<button class="tile done" style="--gc:${gr.hex};--gt:${textOn(gr.hex)}" data-n="${q.n}" aria-label="Soal ${q.n} selesai"><b>${String(q.n).padStart(2,"0")}</b><span>✓ SELESAI</span></button>`}
+  return`<button class="tile${q.active?"":" off"}" data-n="${q.n}" aria-label="Soal ${q.n}, ${q.pts} poin"><b>${String(q.n).padStart(2,"0")}</b><span>${q.pts} POIN</span></button>`}).join("")}
+function renderLB(){const box=$("#lbbox");if(!ST){box.innerHTML="";return}
+ const mine=S.bank.filter(q=>q.done&&q.by===ST.nama).sort((x,y)=>(x.doneAt||"").localeCompare(y.doneAt||""));
+ const pts=mine.reduce((a,q)=>a+q.pts,0),tries=S.log.filter(e=>e.siswa===ST.nama).length;
+ box.innerHTML=`<div class="mypts"><small>Total poinmu</small><b>${pts}</b></div><p class="big-note" style="margin:8px 0">${mine.length} soal dijawab benar • ${tries} percobaan</p>`+
+ (mine.length?`<div class="mylist">${mine.slice().reverse().map(q=>{const g=G(q.winner)||{hex:"#999"};return`<div class="myr" style="--gc:${g.hex}"><span>Soal #${q.n}</span><em>+${q.pts}</em></div>`}).join("")}</div>`:`<p class="big-note">Belum ada soal yang kamu jawab dengan benar. Klik satu kotak untuk mulai!</p>`)}
+function renderAll(){renderHead();renderGrid();renderLB();if(!$("#tp").hidden)renderTP()}
+
+/* ================= QUESTION MODAL ================= */
+let curQ=null,timer=null,pending=null,openSwitches=0,away=null;
+const pgTypes=["pg","hots","kasus","pgk"];
+function fmt(q){const t=q.type;if(t==="pgk")return"multi";if(pgTypes.includes(t))return Array.isArray(q.ans)?"multi":"single";return{bs:"bs",isian:"text",uraian:"long",num:"num",jodoh:"match"}[t]||"text"}
+function openQ(n){const q=S.bank.find(x=>x.n===n);if(!q||q.done)return;
+ if(!q.active){toast("Soal ini dinonaktifkan guru");return}
+ if(S.status==="idle"){runQC();S.status="running";S.startedAt=S.startedAt||new Date().toISOString();save();renderAll()}
+ if(S.status!=="running"){toast(S.status==="paused"?"Game sedang dijeda guru":"Game sudah selesai");return}
+ curQ=S.bank.find(x=>x.n===n)||q;pending=null;openSwitches=0;sfx("click");renderQ();$("#ovQ").classList.add("show");startTimer()}
+function renderQ(){const q=curQ,f=fmt(q),r=rng(hash(q.uid+q.n));let inp="";
+ if(f==="single"||f==="multi"){const ord=shuffle(q.opts.map((_,i)=>i),r);
+  inp=(f==="multi"?`<p class="hint">Pilih semua jawaban yang benar.</p>`:"")+`<div class="opts">`+ord.map((oi,k)=>`<button type="button" class="opt" data-oi="${oi}"><i>${"ABCDEF"[k]}</i><span>${esc(q.opts[oi])}</span></button>`).join("")+`</div>`}
+ else if(f==="bs")inp=`<div class="opts"><button type="button" class="opt" data-v="b"><i>✔</i><span>Benar</span></button><button type="button" class="opt" data-v="s"><i>✖</i><span>Salah</span></button></div>`;
+ else if(f==="text")inp=`<label class="fld"><input id="aIn" class="big" autocomplete="off" placeholder="Ketik jawabanmu"></label>`;
+ else if(f==="num")inp=`<label class="fld"><input id="aIn" class="big" inputmode="decimal" autocomplete="off" placeholder="Masukkan angka (0,2 atau 0.2 sama)"></label>`;
+ else if(f==="long")inp=`<label class="fld"><textarea id="aIn" rows="3" placeholder="Tulis jawaban singkatmu"></textarea></label>`;
+ else{const rs=shuffle(q.opts.map((p,i)=>i),r);inp=`<p class="hint">Pasangkan setiap pernyataan dengan jawaban yang tepat.</p>`+q.opts.map((p,i)=>`<div class="pair"><b>${esc(p[0])}</b><select data-i="${i}"><option value="">— pilih —</option>${rs.map(j=>`<option value="${j}">${esc(q.opts[j][1])}</option>`).join("")}</select></div>`).join("")}
+ $("#qcard").innerHTML=`<div class="qhead"><div><h2>SOAL #${q.n}</h2><div class="qmeta"><i>${q.pts} POIN</i><i>TINGKAT: ${LEVEL[q.pts].toUpperCase()}</i><i>${esc(TYPES[q.type])}</i></div></div></div><button class="x" id="qx" aria-label="Tutup">✕</button>
+ <div class="qbody" id="qbody">${S.cfg.trackTab?`<p class="hint">🔒 Berpindah tab atau aplikasi saat mengerjakan soal akan dicatat oleh guru.</p>`:""}${S.cfg.timer?`<div class="tmv" id="tmv"></div><div class="tm"><i id="tmb"></i></div>`:""}${q.stim?`<div class="stim">${esc(q.stim)}</div>`:""}<p class="qtext">${esc(q.q)}</p>${inp}<div id="fb"></div><button class="btn big" id="qsub">SUBMIT JAWABAN</button></div>`}
+function startTimer(){stopTimer();if(!S.cfg.timer)return;let t=+S.cfg.timerSec||60;const tot=t;
+ const tick=()=>{const v=$("#tmv"),b=$("#tmb");if(v)v.textContent="⏱ "+t+" detik";if(b)b.style.width=(t/tot*100)+"%"};tick();
+ timer=setInterval(()=>{t--;tick();if(t<=0){stopTimer();if(!pending){closeQ();toast("⏱ Waktu habis! Soal tetap terbuka.");sfx("wrong")}}},1000)}
+function stopTimer(){if(timer){clearInterval(timer);timer=null}}
+function closeQ(){if(pending)return;stopTimer();$("#ovQ").classList.remove("show");curQ=null}
+function parseNum(s){s=String(s).trim().replace(/\s/g,"");if(!s)return null;if(/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(s))s=s.replace(/\./g,"").replace(",",".");else s=s.replace(",",".");const v=Number(s);return isFinite(v)?v:null}
+function readResp(q){const f=fmt(q),root=$("#qbody");
+ if(f==="single"){const e=root.querySelector(".opt.sel");return e?+e.dataset.oi:null}
+ if(f==="multi")return[...root.querySelectorAll(".opt.sel")].map(e=>+e.dataset.oi);
+ if(f==="bs"){const e=root.querySelector(".opt.sel");return e?e.dataset.v:null}
+ if(f==="match")return[...root.querySelectorAll("select")].map(s=>s.value);
+ return($("#aIn").value||"")}
+function emptyResp(q,r){const f=fmt(q);if(f==="single"||f==="bs")return r===null;if(f==="multi")return!r.length;if(f==="match")return r.some(v=>v==="");return!String(r).trim()}
+function check(q,r){const f=fmt(q);
+ if(f==="single")return r===q.ans;
+ if(f==="multi"){const a=q.ans.slice().sort(),b=r.slice().sort();return a.length===b.length&&a.every((v,i)=>v===b[i])}
+ if(f==="bs")return(r==="b")===!!q.ans;
+ if(f==="text"){const x=norm(r);return!!x&&[].concat(q.ans,q.alts||[]).some(a=>norm(a)===x)}
+ if(f==="num"){const v=parseNum(r);if(v===null)return false;return[q.ans].concat(q.alts||[]).map(a=>typeof a==="number"?a:parseNum(a)).some(a=>a!==null&&Math.abs(a-v)<1e-6)}
+ if(f==="long"){const x=norm(r);return!!x&&(q.ans.every(g=>g.some(k=>x.includes(norm(k))))||(q.alts||[]).some(a=>a&&x.includes(norm(a))))}
+ return r.every((v,i)=>v!==""&&+v===i)}
+function respText(q,r){const f=fmt(q);if(f==="single")return q.opts[r];if(f==="multi")return r.map(i=>q.opts[i]).join(" • ");if(f==="bs")return r==="b"?"Benar":"Salah";if(f==="match")return r.map((v,i)=>q.opts[i][0]+" → "+q.opts[v][1]).join("; ");return String(r)}
+function setProgress(){if(!ST)return;const tot=S.bank.filter(q=>q.active).length||1;const mine=S.bank.filter(q=>q.done&&q.by===ST.nama).length;
+ S.progress[ST.id]={student_id:ST.id,lesson_id:"sdgs-"+slug(S.cfg.kelas),current_section:"Soal #"+(curQ?curQ.n:"-"),progress_percentage:Math.round(mine/tot*1000)/10,status:S.status==="over"?"selesai":"berjalan"}}
+function submitQ(){const q=curQ;if(!q||q.done||pending)return;
+ if(S.status!=="running"){toast("Game sedang dijeda");return}
+ const r=readResp(q);if(emptyResp(q,r)){toast("Isi jawabanmu dulu");return}
+ q.attempts++;const ok=check(q,r);if(!ok)q.wrong=(q.wrong||0)+1;
+ const e={t:new Date().toISOString(),n:q.n,type:TYPES[q.type],level:LEVEL[q.pts],siswa:ST.nama,kelas:ST.kelas,grup:"",jawaban:respText(q,r),hasil:ok?"Benar":"Salah",poin:ok?q.pts:0,percobaan:q.attempts,pindahTab:openSwitches};
+ S.log.push(e);S.acts.push({student_id:ST.id,activity_name:"Soal #"+q.n,score:e.poin,attempts:q.attempts,completed_at:e.t});setProgress();save();
+ const fb=$("#fb");
+ if(!ok){sfx("wrong");closeQ();toast("❌ JAWABAN SALAH! Soal tetap terbuka, silakan coba lagi.");return}
+ pending=e;stopTimer();sfx("right");confetti(1800,90);
+ $("#qx").hidden=true;
+ $("#qbody").innerHTML=`<div class="res ok"><div class="ico">✅</div><h3>JAWABAN BENAR!</h3><div class="plus">+${q.pts} POIN</div></div><p style="text-align:center;font-weight:700;margin:6px 0 0">Pilih kelompok yang mendapat poin:</p><div class="gpick">${ranked().map(g=>`<button class="gbtn" data-g="${g.id}" style="--gc:${g.hex};--gt:${textOn(g.hex)}">${esc(g.emo||"")} ${esc(g.name)}<small>${g.score} poin</small></button>`).join("")}</div>`;
+ setTimeout(()=>sfx("point"),380)}
+function award(n,gid){const q=S.bank.find(x=>x.n===n);if(!q||q.done)return false;
+ const before=ranked().map(g=>g.id);q.done=true;q.winner=gid;q.by=ST.nama;q.doneAt=new Date().toISOString();
+ if(pending){pending.grup=G(gid).name;pending=null}
+ setProgress();save();renderGrid();renderLB();renderHead();if(!$("#tp").hidden)renderTP();
+ const after=ranked(),ni=after.findIndex(g=>g.id===gid),oi=before.indexOf(gid);
+ $("#ovQ").classList.remove("show");stopTimer();curQ=null;
+ if(S.bank.every(x=>x.done||!x.active)){setTimeout(()=>endGame(true),1200)}
+ return true}
+
+/* ================= GAME CONTROL ================= */
+function setStatus(s){S.status=s;if(s==="running"&&!S.startedAt)S.startedAt=new Date().toISOString();save();renderAll()}
+function startGame(){const qc=runQC();renderAll();
+ $("#qcCard").innerHTML=`<h2>Quality Control Bank Soal</h2><ul class="qc">${qc.res.map(r=>`<li>${r[1]?"✅":"❌"} <b>${r[0]}</b><br><span class="big-note">${esc(r[2])}</span></li>`).join("")}</ul>${qc.regen?`<p class="big-note">🔄 ${qc.regen} soal yang terlalu mirip diganti otomatis.</p>`:""}<div class="row"><button class="btn ${qc.pass?"ok":""}" id="qcGo">${qc.pass?"▶ Mulai game":"Tutup"}</button>${qc.pass?`<button class="btn ghost" data-close="ovQC">Batal</button>`:""}</div>`;
+ $("#ovQC").classList.add("show");$("#qcGo").onclick=()=>{$("#ovQC").classList.remove("show");if(qc.pass){setStatus("running");toast("Game dimulai!")}}}
+function endGame(auto){S.status="over";const rk=ranked();
+ const win=rk[0];S.history.unshift({id:uid(),date:new Date().toISOString(),mapel:S.cfg.mapel,kelas:S.cfg.kelas,materi:S.cfg.materi,guru:S.cfg.guru,total:S.bank.length,answered:S.bank.filter(q=>q.done).length,winnerGroup:win?win.name:"-",winnerStudents:win?members(win.id).map(m=>m[0]):[],ranking:rk.map(g=>({name:g.name,score:g.score,solved:g.solved,members:members(g.id).map(m=>m[0]+" ("+m[1]+")")})),attempts:S.log.length,students:studentRank().filter(s=>s.pts>0).map(s=>s.nama+" ("+s.pts+")")});
+ save();renderAll();showOver()}
+function resetSession(){S.bank.forEach(q=>{q.done=false;q.winner=null;q.by=null;q.attempts=0;q.wrong=0;delete q.doneAt});S.log=[];S.acts=[];S.progress={};S.tabLog=[];S.status="idle";S.startedAt=null;save();$("#ovO").classList.remove("show");renderAll()}
+function showOver(){const rk=ranked(),w=rk[0];if(!w)return;const m=members(w.id),tot=S.bank.filter(q=>q.active).reduce((a,q)=>a+q.pts,0)||1;
+ const sr=studentRank();
+ $("#oCard").innerHTML=`<h1 class="disp">GAME OVER</h1><h3>🏆 FINAL LEADERBOARD</h3>
+ <div class="champ" style="--gc:${w.hex};--gt:${textOn(w.hex)}"><div class="disp" style="font-size:20px">🏆 CONGRATULATIONS!</div><h2>${esc(w.emo||"")} Kelompok ${esc(w.name)}</h2><div>${m.length?esc(m.map(x=>x[0]).join(", ")):"—"}</div><div class="disp" style="margin-top:6px">CLASS OF CHAMPION</div><div class="sc">${w.score.toLocaleString("id-ID")} POINTS</div></div>
+ <div class="fl">${rk.map((g,i)=>`<div class="r" style="--gc:${g.hex}"><b class="disp">${["🥇","🥈","🥉"][i]||(i+1)+"."} ${esc(g.name)}</b><span>${esc(members(g.id).map(x=>x[0]).join(", ")||"—")}</span><b class="disp">${g.score}</b></div>`).join("")}</div>
+ <h3>Peringkat siswa</h3><div class="fl">${sr.map((s,i)=>`<div class="r" style="--gc:var(--accent)"><b>${i+1}. ${esc(s.nama)}</b><span>${esc(s.kelas)} • ${s.n} soal</span><b class="disp">${s.pts}</b></div>`).join("")||"<p class='big-note'>Belum ada data siswa.</p>"}</div>
+ ${ST?`<div style="text-align:left"><label class="fld"><span>Refleksi: apa satu hal yang kamu pelajari tentang SDGs hari ini?</span><textarea id="rfIn" rows="3"></textarea></label><div class="row"><button class="btn" id="rfGo">Kirim refleksi</button><button class="btn ghost" data-close="ovO">Tutup</button></div></div>`:`<div class="row" style="justify-content:center"><button class="btn ghost" data-close="ovO">Tutup</button></div>`}`;
+ $("#ovO").classList.add("show");sfx("over");setTimeout(()=>{sfx("champ");confetti(5200,260)},700);
+ const rf=$("#rfGo");if(rf)rf.onclick=()=>{const my=S.bank.filter(q=>q.done&&q.by===ST.nama).reduce((a,q)=>a+q.pts,0);
+  S.evals=S.evals.filter(e=>e.student_id!==ST.id);S.evals.push({student_id:ST.id,score:my,percentage:Math.round(my/tot*1000)/10,submitted_at:new Date().toISOString()});
+  S.refl=S.refl.filter(e=>e.student_id!==ST.id);S.refl.push({student_id:ST.id,response:$("#rfIn").value});save();toast("Refleksi tersimpan. Terima kasih!");$("#ovO").classList.remove("show")}}
+
+/* ================= EXPORT ================= */
+function csvOf(rows){return rows.map(r=>r.map(v=>{v=v==null?"":String(v);return/[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(",")).join("\r\n")}
+function rankingRows(){return[["Ranking","Kelompok","Nama Siswa","Warna","Total Poin","Soal Dikuasai"]].concat(ranked().map((g,i)=>[i+1,g.name,members(g.id).map(m=>m[0]).join("; "),g.hex,g.score,g.solved]))}
+function detailRows(){return[["Tanggal","Waktu","No Soal","Jenis Soal","Tingkat Kesulitan","Nama Siswa","Kelompok","Jawaban","Hasil","Poin","Jumlah Percobaan","Pindah Tab Saat Menjawab"]].concat(S.log.map(e=>[fdate(e.t),ftime(e.t),e.n,e.type,e.level,e.siswa,e.grup,e.jawaban,e.hasil,e.poin,e.percobaan,e.pindahTab||0]))}
+const fname=(part,ext)=>`class-of-champion_${slug(S.cfg.mapel)}_${slug(S.cfg.kelas)}_${slug(S.cfg.materi).slice(0,28).replace(/-$/,"")}_${part}_${isoDay()}.${ext}`;
+async function saveFile(name,blobData,mime){
+ try{if(window.claude&&claude.use){const d=await claude.use("downloads");if(d){await d.save({filename:name,data:blobData});toast("File siap disimpan");return}}}catch(e){if(e&&e.code==="declined")return}
+ const blob=blobData instanceof Blob?blobData:new Blob([blobData],{type:mime});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),1500);toast("Mengunduh "+name)}
+function tabRows(){return[["Tanggal","Waktu","Nama Siswa","Kelas","No Absen","No Soal","Lama di Luar (detik)"]].concat(S.tabLog.map(e=>[fdate(e.t),ftime(e.t),e.siswa,e.kelas,e.absen,e.n,e.detik]))}
+function exportCSV(kind){const rows=kind==="rank"?rankingRows():kind==="tab"?tabRows():detailRows();if(rows.length<2){toast("Belum ada data untuk diekspor");return}
+ const text="\uFEFF"+csvOf(rows);saveFile(fname(kind==="rank"?"ranking":kind==="tab"?"pindah-tab":"detail","csv"),new Blob([text],{type:"text/csv;charset=utf-8;"}),"text/csv;charset=utf-8;")}
+function exportXLSX(){if(!window.XLSX){toast("Library XLSX tidak tersedia, gunakan CSV");return}
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rankingRows()),"Ringkasan Ranking");XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(detailRows()),"Detail Permainan");
+ const buf=XLSX.write(wb,{bookType:"xlsx",type:"array"});saveFile(fname("hasil","xlsx"),new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
+
+/* ================= TEACHER PANEL ================= */
+let TAB="dash",openHist=null;
+const isTeacher=()=>sessionStorage.getItem("coc_t")==="1";
+async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function openTeacher(){if(isTeacher()){showTP();return}$("#tPw").value="";$("#tErr").textContent="";$("#ovT").classList.add("show");setTimeout(()=>$("#tPw").focus(),50)}
+async function teacherLogin(){const pw=$("#tPw").value;let ok=false;try{ok=(await sha("coc-salt:"+pw))===PW_HASH}catch(e){}
+ if(!ok){$("#tErr").textContent="✕ Password salah";return}
+ sessionStorage.setItem("coc_t","1");$("#ovT").classList.remove("show");showTP()}
+function showTP(){$("#tp").hidden=false;renderTP()}
+function confirmBox(t,m,yes,cb){$("#cT").textContent=t;$("#cM").textContent=m;$("#cYes").textContent=yes;$("#ovC").classList.add("show");$("#cYes").onclick=()=>{$("#ovC").classList.remove("show");cb()};$("#cNo").onclick=()=>$("#ovC").classList.remove("show")}
+function bars(map,total){const mx=Math.max(1,...Object.values(map));return Object.entries(map).map(([k,v])=>`<div class="bar"><span title="${esc(k)}">${esc(k)}</span><i style="width:${Math.round(v/mx*55)+2}%"></i><b>${v}</b></div>`).join("")||"<p class='big-note'>Belum ada data.</p>"}
+function renderTP(){const tabs=[["dash","DASHBOARD"],["bank","BANK SOAL"],["ctrl","GAME CONTROL"],["grp","KELOMPOK"],["stat","STATISTIK"],["hist","RIWAYAT GAME"]];
+ const body={dash:tabDash,bank:tabBank,ctrl:tabCtrl,grp:tabGrp,stat:tabStat,hist:tabHist}[TAB]();
+ const sy=$("#tp").scrollTop;
+ $("#tpin").innerHTML=`<div class="tphead"><h2>🧪 TEACHER CONTROL PANEL</h2><div class="row" style="margin:0"><span class="chip st st-${S.status}">● GAME ${STATUS[S.status].toUpperCase()}</span><button class="btn ghost" id="tpOut">Keluar</button><button class="btn" id="tpClose">Tutup panel</button></div></div><div class="tabs">${tabs.map(t=>`<button class="tab${TAB===t[0]?" on":""}" data-tab="${t[0]}">${t[1]}</button>`).join("")}</div>${body}`;
+ $("#tp").scrollTop=sy}
+function tabDash(){const act=S.bank.filter(q=>q.active),done=S.bank.filter(q=>q.done),tp=act.reduce((a,q)=>a+q.pts,0),att=S.bank.reduce((a,q)=>a+q.attempts,0),rk=ranked();
+ const hasLog=S.log.length>0;
+ return`<div class="stats"><div class="stat"><small>Status game</small><b>${STATUS[S.status].toUpperCase()}</b></div><div class="stat"><small>Mata pelajaran</small><b style="font-size:18px">${esc(S.cfg.mapel)}</b></div><div class="stat"><small>Kelas</small><b style="font-size:18px">${esc(S.cfg.kelas)}</b></div><div class="stat"><small>Jumlah soal</small><b>${S.bank.length}</b></div><div class="stat"><small>Soal terjawab</small><b>${done.length}</b></div><div class="stat"><small>Belum terjawab</small><b>${act.length-done.filter(q=>q.active).length}</b></div><div class="stat"><small>Total poin tersedia</small><b>${tp}</b></div><div class="stat"><small>Total percobaan</small><b>${att}</b></div></div>
+ <div class="panel" style="margin-bottom:14px"><h3>GAME STATUS: ${S.status.toUpperCase()} — ${done.length} / ${S.bank.length} SOAL TERJAWAB</h3><p class="big-note" style="margin:0">Materi: ${esc(S.cfg.materi)}</p></div>
+ <div class="two"><div class="panel"><h3>Ranking kelompok</h3><div class="fl" style="margin:0">${rk.map((g,i)=>`<div class="r" style="--gc:${g.hex}"><b>${["🥇","🥈","🥉"][i]||(i+1)+"."} ${esc(g.name)}</b><span>${g.solved} soal</span><b class="disp">${g.score}</b></div>`).join("")}</div></div>
+ <div class="panel"><h3>📊 EXPORT HASIL</h3><p class="big-note">Ranking butuh minimal satu kelompok; detail butuh minimal satu jawaban tercatat.</p><div class="row"><button class="btn" data-exp="rank" ${rk.length?"":"disabled"}>EXPORT CSV — Ranking</button><button class="btn" data-exp="detail" ${hasLog?"":"disabled"}>EXPORT CSV — Detail</button><button class="btn" data-exp="tab" ${S.tabLog.length?"":"disabled"}>EXPORT CSV — Pindah Tab</button><button class="btn ghost" data-exp="xlsx" ${hasLog?"":"disabled"}>XLSX (2 sheet)</button></div></div></div>
+ <div class="panel" style="margin-top:14px"><h3>Siswa yang sudah login (${S.students.length})</h3><div class="tblw"><table><tr><th>Nama</th><th>Kelas</th><th>Absen</th><th>Login pertama</th><th>Login terakhir</th><th>Soal benar</th><th>Progress</th><th>Pindah tab</th></tr>${S.students.map(s=>`<tr><td>${esc(s.nama)}</td><td>${esc(s.kelas)}</td><td>${esc(s.nomor_absen)}</td><td>${fdate(s.created_at)} ${ftime(s.created_at)}</td><td>${fdate(s.last_login)} ${ftime(s.last_login)}</td><td>${S.bank.filter(q=>q.done&&q.by===s.nama).length}</td><td>${(S.progress[s.id]||{}).progress_percentage||0}%</td><td>${S.tabLog.filter(e=>e.id===s.id).length}</td></tr>`).join("")||`<tr><td colspan="8">Belum ada siswa login.</td></tr>`}</table></div></div>`}
+function tabBank(){const c=S.cfg;
+ return`<div class="panel" style="margin-bottom:14px"><h3>Setup game & generator bank soal</h3>
+ <div class="two"><label class="fld"><span>Mata pelajaran</span><input data-cfg="mapel" value="${esc(c.mapel)}"></label><label class="fld"><span>Kelas/Fase</span><input data-cfg="kelas" value="${esc(c.kelas)}"></label><label class="fld"><span>Materi/Topik</span><input data-cfg="materi" value="${esc(c.materi)}"></label><label class="fld"><span>Nama permainan</span><input data-cfg="nama" value="${esc(c.nama)}"></label><label class="fld"><span>Nama guru</span><input data-cfg="guru" value="${esc(c.guru)}"></label><label class="fld"><span>Nama kelas (pisahkan koma)</span><input data-cfg="kelasList" value="${esc(c.kelasList)}"></label><label class="fld"><span>Jumlah soal (maks. ${POOL.length})</span><input data-cfg="jumlah" type="number" min="5" max="${POOL.length}" value="${c.jumlah}"></label></div>
+ <div class="fld"><span>Jenis soal (boleh lebih dari satu)</span><div class="checks">${Object.entries(TYPES).map(([k,v])=>`<label><input type="checkbox" data-type="${k}" ${c.types.includes(k)?"checked":""}> ${v}</label>`).join("")}</div></div>
+ <div class="row"><button class="btn ok" data-act="savecfg">SIMPAN KONFIGURASI</button><button class="btn" data-act="gen">Generate Bank Soal</button><button class="btn bad" data-act="regenall">🔄 REGENERATE SOAL (semua)</button><button class="btn ghost" data-act="addq">+ Tambah soal</button><button class="btn ghost" data-act="qc">Jalankan QC</button></div>
+ <p class="big-note">Bank berisi ${POOL.length} soal unik tentang SDGs. Generate memilih soal sesuai jumlah dan jenis yang dicentang, dengan poin 5–25 yang tersebar merata.</p></div>
+ <div class="tblw"><table><tr><th>No</th><th>Jenis</th><th>Soal</th><th>Level</th><th>Kunci</th><th>Poin</th><th>Status</th><th>Aksi</th></tr>${S.bank.map(q=>`<tr><td><b>${q.n}</b></td><td>${esc(TYPES[q.type])}</td><td class="qt">${q.stim?`<i class="big-note">${esc(q.stim)}</i><br>`:""}${esc(q.q)}</td><td>${LEVEL[q.pts]}</td><td class="qt">${esc(keyText(q))}</td><td class="pts">${[5,10,15,20,25].map(p=>`<button class="${q.pts===p?"on":""}" data-pt="${q.n}:${p}">${p}</button>`).join("")}</td><td>${q.done?`<span class="tag" style="background:${(G(q.winner)||{}).hex};color:${textOn((G(q.winner)||{hex:"#999"}).hex)}">Selesai: ${esc((G(q.winner)||{}).name||"?")}</span>`:q.active?`<span class="tag">Aktif</span>`:`<span class="tag">Nonaktif</span>`}<br><small>${q.attempts}x coba</small></td><td><div class="row" style="margin:0"><button class="btn sm ghost" data-edit="${q.n}">Edit</button><button class="btn sm ghost" data-regen="${q.n}" ${q.done?"disabled":""}>🔄</button><button class="btn sm ghost" data-tog="${q.n}">${q.active?"Nonaktifkan":"Aktifkan"}</button><button class="btn sm bad" data-del="${q.n}">Hapus</button></div></td></tr>`).join("")}</table></div>`}
+function tabCtrl(){const s=S.status;
+ return`<div class="panel"><h3>Kontrol permainan</h3><div class="row"><button class="btn ok" data-act="start" ${s==="idle"?"":"disabled"}>▶ START GAME</button><button class="btn" data-act="pause" ${s==="running"?"":"disabled"}>⏸ PAUSE GAME</button><button class="btn ok" data-act="resume" ${s==="paused"?"":"disabled"}>▶ RESUME GAME</button><button class="btn bad" data-act="end" ${s==="running"||s==="paused"?"":"disabled"}>🛑 END GAME</button></div>
+ <p class="big-note">START menjalankan QC bank soal terlebih dahulu. PAUSE menghentikan interaksi siswa tanpa menghapus progres.</p>
+ <h3 style="margin-top:18px">Deteksi pindah tab saat menjawab soal</h3><div class="checks" style="margin-bottom:6px"><label><input type="checkbox" data-cfgb="trackTab" ${S.cfg.trackTab?"checked":""}> Catat setiap kali siswa pindah tab atau aplikasi</label><label><input type="checkbox" data-cfgb="tabWarn" ${S.cfg.tabWarn?"checked":""}> Tampilkan peringatan kepada siswa</label><label><input type="checkbox" data-cfgb="trackBlur" ${S.cfg.trackBlur?"checked":""}> Hitung juga saat jendela kehilangan fokus (lebih ketat)</label></div><p class="big-note">Pencatatan hanya berjalan saat soal terbuka dan belum dijawab benar. Hasilnya ada di tab STATISTIK, dan jumlah per siswa ada di DASHBOARD. <button class="btn sm ghost" data-act="clearTab" ${S.tabLog.length?"":"disabled"}>Hapus catatan pindah tab</button></p><h3 style="margin-top:18px">Timer (opsional)</h3><div class="row" style="align-items:center"><label class="checks"><label><input type="checkbox" data-cfgb="timer" ${S.cfg.timer?"checked":""}> Aktifkan timer menjawab</label></label><label class="fld" style="margin:0"><input data-cfg="timerSec" type="number" min="10" max="600" value="${S.cfg.timerSec}" style="width:110px"></label><span>detik</span></div>
+ ${s==="over"?`<h3 style="margin-top:18px">Sesi selesai</h3><div class="row"><button class="btn" data-act="newses">Mulai sesi baru (reset skor)</button><button class="btn ghost" data-act="showover">Tampilkan layar Game Over</button></div>`:""}</div>`}
+function tabGrp(){return`<div class="panel"><h3>Kelompok</h3><div class="tblw"><table><tr><th>Warna</th><th>Nama</th><th>Poin</th><th>Soal</th><th>Aksi</th></tr>${ranked().map(g=>`<tr><td><input type="color" data-gc="${g.id}" value="${g.hex}"></td><td><input data-gn="${g.id}" value="${esc(g.name)}" style="padding:7px 9px;border:1.5px solid var(--line);border-radius:9px;background:var(--soft)"></td><td><b>${g.score}</b></td><td>${g.solved}</td><td><div class="row" style="margin:0"><button class="btn sm ghost" data-gr="${g.id}">Reset skor</button><button class="btn sm bad" data-gd="${g.id}">Hapus</button></div></td></tr>`).join("")}</table></div><div class="row"><button class="btn" data-act="addg">+ Tambah kelompok</button></div><p class="big-note">Reset skor membuka kembali soal yang dimenangkan kelompok tersebut.</p></div>`}
+function tabStat(){return tabStat0()+tabSwitchPanel()}
+function tabSwitchPanel(){const by={};S.tabLog.forEach(e=>{const k=e.id;(by[k]=by[k]||{nama:e.siswa,kelas:e.kelas,n:0,sec:0,qs:{}});by[k].n++;by[k].sec+=e.detik;by[k].qs[e.n]=(by[k].qs[e.n]||0)+1});
+ const rows=Object.values(by).sort((a,b)=>b.n-a.n);const last=S.tabLog.slice(-30).reverse();
+ return`<div class="panel" style="margin-top:14px"><h3>Pindah tab saat menjawab soal</h3><p class="big-note">Pengaturan: ${S.cfg.trackTab?"aktif":"nonaktif"} • total kejadian: <b>${S.tabLog.length}</b></p>${rows.length?`<div class="tblw"><table><tr><th>Siswa</th><th>Kelas</th><th>Jumlah pindah tab</th><th>Total waktu di luar</th><th>Soal paling sering</th></tr>${rows.map(r=>{const top=Object.entries(r.qs).sort((a,b)=>b[1]-a[1])[0];return`<tr><td>${esc(r.nama)}</td><td>${esc(r.kelas)}</td><td><b>${r.n}</b></td><td>${Math.floor(r.sec/60)} menit ${r.sec%60} detik</td><td>#${top[0]} (${top[1]}x)</td></tr>`}).join("")}</table></div><h3 style="margin-top:14px">30 kejadian terakhir</h3><div class="tblw"><table><tr><th>Waktu</th><th>Siswa</th><th>Soal</th><th>Lama di luar</th></tr>${last.map(e=>`<tr><td>${ftime(e.t)}</td><td>${esc(e.siswa)}</td><td>#${e.n}</td><td>${e.detik} detik</td></tr>`).join("")}</table></div>`:"<p class='big-note'>Belum ada kejadian pindah tab tercatat.</p>"}</div>`}
+function tabStat0(){const att=S.bank.reduce((a,q)=>a+q.attempts,0),wr=S.bank.reduce((a,q)=>a+(q.wrong||0),0),ok=att-wr;
+ const most=[...S.bank].sort((a,b)=>b.attempts-a.attempts)[0],hard=[...S.bank].filter(q=>q.attempts>0).sort((a,b)=>(b.wrong/b.attempts)-(a.wrong/a.attempts)||b.wrong-a.wrong)[0];
+ const rk=ranked().sort((a,b)=>b.solved-a.solved)[0];
+ const dp={},dl={},dt={};S.bank.forEach(q=>{dp[q.pts+" poin"]=(dp[q.pts+" poin"]||0)+1;dl[LEVEL[q.pts]]=(dl[LEVEL[q.pts]]||0)+1;dt[TYPES[q.type]]=(dt[TYPES[q.type]]||0)+1});
+ return`<div class="stats"><div class="stat"><small>Total percobaan</small><b>${att}</b></div><div class="stat"><small>Jawaban benar</small><b>${att?Math.round(ok/att*100):0}%</b></div><div class="stat"><small>Soal dikuasai</small><b>${S.bank.filter(q=>q.done).length}</b></div><div class="stat"><small>Paling sering dicoba</small><b>${most&&most.attempts?"#"+most.n:"-"}</b></div><div class="stat"><small>Soal paling sulit</small><b>${hard?"#"+hard.n:"-"}</b></div><div class="stat"><small>Kelompok terbanyak benar</small><b style="font-size:18px">${rk&&rk.solved?esc(rk.name):"-"}</b></div></div>
+ <div class="two"><div class="panel"><h3>Distribusi poin</h3>${bars(dp)}</div><div class="panel"><h3>Distribusi tingkat kesulitan</h3>${bars(dl)}</div><div class="panel"><h3>Distribusi jenis soal</h3>${bars(dt)}</div></div>`}
+function tabHist(){return`<div class="panel"><h3>Riwayat game</h3>${S.history.length?S.history.map(h=>`<div class="stat" style="margin-bottom:10px"><b style="font-size:16px">Tanggal: ${fdate(h.date)}</b><div>Mapel: ${esc(h.mapel)} • Kelas: ${esc(h.kelas)} • Materi: ${esc(h.materi)}</div><div>Pemenang: <b>${esc(h.winnerStudents.join(", ")||h.winnerGroup)}</b> (Kelompok ${esc(h.winnerGroup)})</div><div>Total soal: ${h.total} • Soal terjawab: ${h.answered} • Percobaan: ${h.attempts}</div><div class="row"><button class="btn sm ghost" data-hist="${h.id}">${openHist===h.id?"Tutup detail":"Lihat detail"}</button></div>${openHist===h.id?`<div class="fl">${h.ranking.map((r,i)=>`<div class="r"><b>${i+1}. ${esc(r.name)}</b><span>${esc(r.members.join(", ")||"—")}</span><b>${r.score}</b></div>`).join("")}<p class="big-note">Siswa berpoin: ${esc(h.students.join(", ")||"-")}</p></div>`:""}</div>`).join(""):"<p class='big-note'>Belum ada sesi yang diselesaikan. Sesi tersimpan otomatis saat END GAME.</p>"}</div>`}
+
+/* ---- question editor ---- */
+function serAns(q){const f=fmt(q);if(f==="single")return String(q.ans+1);if(f==="multi")return q.ans.map(i=>i+1).join(",");if(f==="bs")return q.ans?"benar":"salah";if(f==="text")return q.ans[0]||"";if(f==="num")return String(q.ans);if(f==="long")return q.ans.map(g=>g.join("|")).join(";");return""}
+function serOpts(q){return q.opts?(fmt(q)==="match"?q.opts.map(p=>p.join("|")):q.opts).join("\n"):""}
+function openEdit(n){const isNew=n===null;const q=isNew?{n:Math.max(0,...S.bank.map(b=>b.n))+1,uid:"u"+uid(),type:"pg",pts:10,stim:"",q:"",opts:["","","",""],ans:0,alts:[],active:true,done:false,winner:null,by:null,attempts:0,wrong:0}:S.bank.find(b=>b.n===n);
+ const alts=fmt(q)==="text"?q.ans.slice(1).concat(q.alts||[]):(q.alts||[]);
+ $("#eCard").innerHTML=`<h2>${isNew?"Tambah soal":"Edit soal #"+q.n}</h2>
+ <label class="fld"><span>Jenis soal</span><select id="eType">${Object.entries(TYPES).map(([k,v])=>`<option value="${k}" ${q.type===k?"selected":""}>${v}</option>`).join("")}</select></label>
+ <label class="fld"><span>Poin / tingkat kesulitan</span><select id="ePts">${[5,10,15,20,25].map(p=>`<option value="${p}" ${q.pts===p?"selected":""}>${p} poin — ${LEVEL[p]}</option>`).join("")}</select></label>
+ <label class="fld"><span>Stimulus (opsional)</span><textarea id="eStim" rows="2">${esc(q.stim)}</textarea></label>
+ <label class="fld"><span>Pertanyaan</span><textarea id="eQ" rows="3">${esc(q.q)}</textarea></label>
+ <label class="fld"><span>Opsi (satu per baris; menjodohkan: kiri|kanan)</span><textarea id="eOpts" rows="5">${esc(serOpts(q))}</textarea></label>
+ <label class="fld"><span>Kunci (pilihan: nomor opsi, mis. 2 atau 1,3 • benar/salah: benar atau salah • isian/numerik: jawaban • uraian: kata1|kata2;kata3|kata4)</span><input id="eKey" value="${esc(serAns(q))}"></label>
+ <label class="fld"><span>Alternatif jawaban (pisahkan dengan titik koma)</span><input id="eAlt" value="${esc(alts.join(";"))}"></label>
+ <label class="checks"><label><input type="checkbox" id="eAct" ${q.active?"checked":""}> Soal aktif</label></label>
+ <div class="err" id="eErr"></div><div class="row"><button class="btn ok" id="eSave">SIMPAN</button><button class="btn ghost" data-close="ovE">Batal</button></div>`;
+ $("#ovE").classList.add("show");
+ $("#eSave").onclick=()=>{const t=$("#eType").value,key=$("#eKey").value.trim(),lines=$("#eOpts").value.split("\n").map(s=>s.trim()).filter(Boolean),alt=$("#eAlt").value.split(";").map(s=>s.trim()).filter(Boolean),qt=$("#eQ").value.trim();
+  const er=m=>{$("#eErr").textContent=m};if(!qt)return er("Pertanyaan wajib diisi");
+  const nq={...q,type:t,pts:+$("#ePts").value,stim:$("#eStim").value.trim(),q:qt,active:$("#eAct").checked,alts:[]};
+  const f=(t==="pgk")?"multi":pgTypes.includes(t)?(/[,;]/.test(key)?"multi":"single"):({bs:"bs",isian:"text",uraian:"long",num:"num",jodoh:"match"}[t]);
+  if(f==="single"||f==="multi"){if(lines.length<2)return er("Minimal 2 opsi");nq.opts=lines;const ix=key.split(/[,;]/).map(x=>parseInt(x)-1);if(ix.some(i=>isNaN(i)||i<0||i>=lines.length))return er("Kunci harus nomor opsi yang valid");nq.ans=f==="multi"?ix:ix[0]}
+  else if(f==="bs"){if(!/^(benar|salah)$/i.test(key))return er("Kunci: benar atau salah");nq.opts=null;nq.ans=/^benar$/i.test(key)}
+  else if(f==="text"){if(!key)return er("Kunci wajib diisi");nq.opts=null;nq.ans=[key];nq.alts=alt}
+  else if(f==="num"){const v=parseNum(key);if(v===null)return er("Kunci harus angka");nq.opts=null;nq.ans=v;nq.alts=alt}
+  else if(f==="long"){const g=key.split(";").map(x=>x.split("|").map(s=>s.trim()).filter(Boolean)).filter(a=>a.length);if(!g.length)return er("Isi kata kunci uraian");nq.opts=null;nq.ans=g;nq.alts=alt}
+  else{const p=lines.map(l=>l.split("|").map(s=>s.trim()));if(p.length<2||p.some(x=>x.length<2||!x[0]||!x[1]))return er("Format menjodohkan: kiri|kanan, minimal 2 baris");nq.opts=p;nq.ans=null}
+  if(!S.cfg.types.includes(t))S.cfg.types.push(t);
+  if(isNew)S.bank.push(nq);else S.bank[S.bank.findIndex(b=>b.n===q.n)]=nq;
+  save();$("#ovE").classList.remove("show");renderAll();toast("Soal tersimpan")}}
+
+/* ================= EVENTS ================= */
+document.addEventListener("click",e=>{const t=e.target.closest("button,[data-close]");if(!t)return;
+ if(t.dataset.close){$("#"+t.dataset.close).classList.remove("show");return}
+ if(t.id==="bSound"){S.cfg.sound=!S.cfg.sound;save();renderHead();sfx("click");return}
+ if(t.id==="bTeacher"){openTeacher();return}
+ if(t.id==="tGo"){teacherLogin();return}
+ if(t.id==="bOut"){ST=null;saveST();renderHead();return}
+ if(t.id==="lbT"){$("#lb").classList.toggle("open");return}
+ if(t.id==="lGo"){login();return}
+ if(t.id==="qx"){closeQ();return}
+ if(t.id==="qsub"){submitQ();return}
+ if(t.classList.contains("tile")&&t.closest("#grid")){openQ(+t.dataset.n);return}
+ if(t.classList.contains("opt")&&t.closest("#qbody")){const f=fmt(curQ);if(f==="multi")t.classList.toggle("sel");else{t.parentElement.querySelectorAll(".opt").forEach(o=>o.classList.remove("sel"));t.classList.add("sel")}sfx("click");return}
+ if(t.dataset.g){award(curQ.n,t.dataset.g);return}
+ if(t.id==="tpClose"){$("#tp").hidden=true;return}
+ if(t.id==="tpOut"){sessionStorage.removeItem("coc_t");$("#tp").hidden=true;return}
+ if(t.dataset.tab){TAB=t.dataset.tab;renderTP();return}
+ if(t.dataset.exp){t.dataset.exp==="xlsx"?exportXLSX():exportCSV(t.dataset.exp);return}
+ if(t.dataset.pt){const[n,p]=t.dataset.pt.split(":").map(Number);const q=S.bank.find(b=>b.n===n);q.pts=p;save();renderAll();return}
+ if(t.dataset.edit){openEdit(+t.dataset.edit);return}
+ if(t.dataset.tog){const q=S.bank.find(b=>b.n===+t.dataset.tog);q.active=!q.active;save();renderAll();return}
+ if(t.dataset.del){const n=+t.dataset.del;confirmBox("Hapus soal #"+n+"?","Soal akan dihapus dari bank dan nomor disusun ulang.","YA, HAPUS",()=>{S.bank=S.bank.filter(b=>b.n!==n);S.bank.forEach((b,i)=>b.n=i+1);save();renderAll()});return}
+ if(t.dataset.regen){const i=S.bank.findIndex(b=>b.n===+t.dataset.regen);const c=candidate(S.bank[i].pts,null);if(!c){toast("Tidak ada soal baru yang cukup berbeda");return}putFromPool(i,c);save();renderAll();toast("Soal #"+S.bank[i].n+" diganti dengan soal baru");return}
+ if(t.dataset.gr){const id=t.dataset.gr;confirmBox("Reset skor "+G(id).name+"?","Soal yang dimenangkan kelompok ini akan dibuka kembali.","YA, RESET",()=>{S.bank.forEach(q=>{if(q.winner===id){q.done=false;q.winner=null;q.by=null}});save();renderAll()});return}
+ if(t.dataset.gd){const id=t.dataset.gd;if(S.groups.length<=1){toast("Minimal 1 kelompok");return}confirmBox("Hapus kelompok "+G(id).name+"?","Soal yang dimenangkan akan dibuka kembali.","YA, HAPUS",()=>{S.bank.forEach(q=>{if(q.winner===id){q.done=false;q.winner=null;q.by=null}});S.groups=S.groups.filter(g=>g.id!==id);save();renderAll()});return}
+ if(t.dataset.hist){openHist=openHist===t.dataset.hist?null:t.dataset.hist;renderTP();return}
+ const a=t.dataset.act;if(!a)return;
+ if(a==="savecfg"){save();renderAll();toast("Konfigurasi tersimpan")}
+ else if(a==="gen"){if(!S.cfg.types.length){toast("Pilih minimal satu jenis soal");return}const go=()=>{S.seed++;buildBank();const q=runQC();renderAll();toast("Bank soal dibuat: "+S.bank.length+" soal"+(q.pass?" • QC lolos":" • cek QC"))};S.bank.some(q=>q.done)?confirmBox("Generate ulang?","Progres dan skor sesi ini akan direset.","YA, GENERATE",go):go()}
+ else if(a==="regenall"){const go=()=>{S.seed+=7;buildBank();runQC();renderAll();toast("Seluruh soal diregenerasi")};S.bank.some(q=>q.done)?confirmBox("Regenerate seluruh soal?","Progres dan skor sesi ini akan direset.","YA, REGENERATE",go):go()}
+ else if(a==="addq")openEdit(null);
+ else if(a==="qc"){const q=runQC();renderAll();$("#qcCard").innerHTML=`<h2>Quality Control Bank Soal</h2><ul class="qc">${q.res.map(r=>`<li>${r[1]?"✅":"❌"} <b>${r[0]}</b><br><span class="big-note">${esc(r[2])}</span></li>`).join("")}</ul>${q.regen?`<p class="big-note">🔄 ${q.regen} soal diganti otomatis.</p>`:""}<div class="row"><button class="btn" data-close="ovQC">Tutup</button></div>`;$("#ovQC").classList.add("show")}
+ else if(a==="clearTab")confirmBox("Hapus catatan pindah tab?","Seluruh catatan pindah tab pada sesi ini akan dihapus.","YA, HAPUS",()=>{S.tabLog=[];save();renderAll()});
+ else if(a==="start")startGame();
+ else if(a==="pause"){setStatus("paused");if(curQ&&!pending){closeQ()}toast("Game dijeda")}
+ else if(a==="resume"){setStatus("running");toast("Game dilanjutkan")}
+ else if(a==="end")confirmBox("Apakah Anda yakin ingin mengakhiri permainan?","Skor akhir akan disimpan ke riwayat.","YA, GAME OVER",()=>endGame());
+ else if(a==="newses")confirmBox("Mulai sesi baru?","Skor dan status soal direset. Riwayat tetap tersimpan.","YA, RESET",resetSession);
+ else if(a==="showover")showOver();
+ else if(a==="addg"){const i=S.groups.length;const c=COLORS[i%COLORS.length];S.groups.push({id:"g"+uid(),name:"Kelompok "+(i+1),hex:c[1],emo:""});save();renderAll()}
+});
+document.addEventListener("change",e=>{const t=e.target;
+ if(t.dataset.cfg){const k=t.dataset.cfg;S.cfg[k]=t.type==="number"?+t.value:t.value;save();renderHead();return}
+ if(t.dataset.cfgb){S.cfg[t.dataset.cfgb]=t.checked;save();return}
+ if(t.dataset.type){const k=t.dataset.type;S.cfg.types=t.checked?[...new Set([...S.cfg.types,k])]:S.cfg.types.filter(x=>x!==k);save();return}
+ if(t.dataset.gc){const g=G(t.dataset.gc);g.hex=t.value;g.emo="";save();renderAll();return}
+ if(t.dataset.gn){G(t.dataset.gn).name=t.value.trim()||"Kelompok";save();renderAll()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if($("#ovQ").classList.contains("show"))closeQ();return}
+ if(e.key==="Enter"){if(e.target.id==="tPw")teacherLogin();else if(e.target.id==="aIn"&&e.target.tagName==="INPUT")submitQ();else if(["lName","lAbsen"].includes(e.target.id))login()}});
+function login(){const nama=$("#lName").value.trim().replace(/\s+/g," "),kelas=$("#lKelas").value,absen=$("#lAbsen").value.trim(),er=$("#lErr");
+ if(nama.length<3){er.textContent="Tulis nama lengkap (minimal 3 huruf).";return}
+ if(!kelas){er.textContent="Pilih kelas.";return}
+ if(!absen||+absen<1){er.textContent="Isi nomor absen dengan angka.";return}
+ const id=slug(nama)+"_"+slug(kelas)+"_"+absen,now=new Date().toISOString();let s=S.students.find(x=>x.id===id);
+ if(s)s.last_login=now;else S.students.push({id,nama,kelas,nomor_absen:+absen,created_at:now,last_login:now});
+ ST={id,nama,kelas,absen,login:now};saveST();save();er.textContent="";renderAll()}
+
+/* ================= DETEKSI PINDAH TAB ================= */
+function tabActive(){return !!(S.cfg.trackTab&&ST&&curQ&&!pending&&S.status==="running")}
+function leaveTab(){if(away||!tabActive())return;away={t:Date.now(),iso:new Date().toISOString(),n:curQ.n,id:ST.id,siswa:ST.nama,kelas:ST.kelas,absen:ST.absen}}
+function backTab(){if(!away)return;const a=away;away=null;const d=Math.max(1,Math.round((Date.now()-a.t)/1000));
+ S.tabLog.push({t:a.iso,id:a.id,siswa:a.siswa,kelas:a.kelas,absen:a.absen,n:a.n,detik:d});openSwitches++;save();
+ if(S.cfg.tabWarn){toast("⚠️ Kamu berpindah tab ("+openSwitches+"x) dan dicatat oleh guru");sfx("wrong")}
+ if(!$("#tp").hidden)renderTP()}
+document.addEventListener("visibilitychange",()=>{document.hidden?leaveTab():backTab()});
+window.addEventListener("blur",()=>{if(S.cfg.trackBlur)leaveTab()});
+window.addEventListener("focus",()=>{if(S.cfg.trackBlur&&!document.hidden)backTab()});
+/* ================= INIT ================= */
+renderAll();
+if(S.status==="over"&&ST)setTimeout(showOver,300);
+</script>
+</body>
+</html>
